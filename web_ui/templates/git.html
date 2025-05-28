@@ -1,0 +1,414 @@
+{% extends "base.html" %}
+
+{% block title %}Git Operations - Code Development Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <i class="fab fa-git-alt text-3xl text-green-600 mr-4"></i>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Git Operations</h1>
+                <p class="text-gray-600">Manage your repository with Git commands through a user-friendly interface.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Git Status -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-900">Repository Status</h2>
+            <button onclick="refreshStatus()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-sync-alt mr-2"></i>Refresh
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="status-output" class="bg-gray-50 rounded-lg p-4 font-mono text-sm whitespace-pre-wrap">
+                Loading status...
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Staging and Committing -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Stage & Commit</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <!-- Add Files -->
+                <div>
+                    <label for="files-input" class="block text-sm font-medium text-gray-700 mb-2">Files to Stage</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="files-input" placeholder="file1.py file2.js or . for all" 
+                               class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <button onclick="addFiles()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-plus mr-2"></i>Add
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Separate multiple files with spaces, or use "." to add all files</p>
+                </div>
+
+                <!-- Commit -->
+                <div>
+                    <label for="commit-message" class="block text-sm font-medium text-gray-700 mb-2">Commit Message</label>
+                    <div class="space-y-2">
+                        <textarea id="commit-message" rows="3" placeholder="Enter commit message..."
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                        <div class="flex items-center space-x-4">
+                            <label class="flex items-center">
+                                <input type="checkbox" id="add-all-checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                <span class="ml-2 text-sm text-gray-700">Add all modified files</span>
+                            </label>
+                            <button onclick="commitChanges()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                                <i class="fas fa-save mr-2"></i>Commit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Branch Management -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Branch Management</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <!-- Create Branch -->
+                <div>
+                    <label for="new-branch-name" class="block text-sm font-medium text-gray-700 mb-2">Create New Branch</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="new-branch-name" placeholder="feature/new-feature"
+                               class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <button onclick="createBranch()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-code-branch mr-2"></i>Create
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Switch Branch -->
+                <div>
+                    <label for="checkout-branch" class="block text-sm font-medium text-gray-700 mb-2">Switch to Branch</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="checkout-branch" placeholder="branch-name"
+                               class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <button onclick="checkoutBranch()" class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 transition-colors">
+                            <i class="fas fa-exchange-alt mr-2"></i>Switch
+                        </button>
+                    </div>
+                </div>
+
+                <!-- List Branches -->
+                <button onclick="listBranches()" class="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors">
+                    <i class="fas fa-list mr-2"></i>List All Branches
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Git Operations -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Additional Operations</h3>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <button onclick="showDiff()" class="flex items-center justify-center p-4 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors">
+                    <i class="fas fa-code-branch mr-2"></i>
+                    <span>Show Diff</span>
+                </button>
+                
+                <button onclick="showLog()" class="flex items-center justify-center p-4 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors">
+                    <i class="fas fa-history mr-2"></i>
+                    <span>View Log</span>
+                </button>
+                
+                <button onclick="gitPush()" class="flex items-center justify-center p-4 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i>
+                    <span>Push</span>
+                </button>
+                
+                <button onclick="gitPull()" class="flex items-center justify-center p-4 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition-colors">
+                    <i class="fas fa-cloud-download-alt mr-2"></i>
+                    <span>Pull</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Output Panel -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">Command Output</h3>
+            <button onclick="clearOutput()" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-trash mr-1"></i>Clear
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="command-output" class="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm min-h-32 max-h-96 overflow-y-auto whitespace-pre-wrap">
+                Ready for Git operations...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load initial status
+document.addEventListener('DOMContentLoaded', function() {
+    refreshStatus();
+});
+
+async function refreshStatus() {
+    const statusElement = document.getElementById('status-output');
+    statusElement.textContent = 'Loading...';
+    
+    try {
+        const response = await fetch('/api/git/status');
+        const data = await response.json();
+        
+        if (data.success) {
+            statusElement.textContent = data.output;
+        } else {
+            statusElement.textContent = `Error: ${data.error}`;
+            statusElement.className = statusElement.className.replace('bg-gray-50', 'bg-red-50 text-red-700');
+        }
+    } catch (error) {
+        statusElement.textContent = `Error: ${error.message}`;
+        statusElement.className = statusElement.className.replace('bg-gray-50', 'bg-red-50 text-red-700');
+    }
+}
+
+async function addFiles() {
+    const filesInput = document.getElementById('files-input');
+    const files = filesInput.value.trim();
+    
+    if (!files) {
+        showNotification('Please enter files to add', 'warning');
+        return;
+    }
+    
+    const fileList = files === '.' ? ['.'] : files.split(/\s+/);
+    
+    try {
+        const response = await fetch('/api/git/add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ files: fileList })
+        });
+        
+        const data = await response.json();
+        appendOutput(`$ git add ${files}`, data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+        
+        if (data.success) {
+            filesInput.value = '';
+            refreshStatus();
+        }
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function commitChanges() {
+    const messageElement = document.getElementById('commit-message');
+    const addAllElement = document.getElementById('add-all-checkbox');
+    
+    const message = messageElement.value.trim();
+    const addAll = addAllElement.checked;
+    
+    if (!message) {
+        showNotification('Please enter a commit message', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/git/commit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message, add_all: addAll })
+        });
+        
+        const data = await response.json();
+        appendOutput(`$ git commit${addAll ? ' -a' : ''} -m "${message}"`, data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+        
+        if (data.success) {
+            messageElement.value = '';
+            addAllElement.checked = false;
+            refreshStatus();
+        }
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function createBranch() {
+    const branchNameElement = document.getElementById('new-branch-name');
+    const branchName = branchNameElement.value.trim();
+    
+    if (!branchName) {
+        showNotification('Please enter a branch name', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/git/create_branch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ branch_name: branchName, checkout: true })
+        });
+        
+        const data = await response.json();
+        appendOutput(`$ git checkout -b ${branchName}`, data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+        
+        if (data.success) {
+            branchNameElement.value = '';
+            refreshStatus();
+        }
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function checkoutBranch() {
+    const checkoutElement = document.getElementById('checkout-branch');
+    const branchName = checkoutElement.value.trim();
+    
+    if (!branchName) {
+        showNotification('Please enter a branch name', 'warning');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/git/checkout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ branch_name: branchName })
+        });
+        
+        const data = await response.json();
+        appendOutput(`$ git checkout ${branchName}`, data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+        
+        if (data.success) {
+            checkoutElement.value = '';
+            refreshStatus();
+        }
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function listBranches() {
+    try {
+        const response = await fetch('/api/git/branches');
+        const data = await response.json();
+        
+        appendOutput('$ git branch -a', data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function showDiff() {
+    try {
+        const response = await fetch('/api/git/diff', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        
+        const data = await response.json();
+        appendOutput('$ git diff', data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function showLog() {
+    try {
+        const response = await fetch('/api/git/log', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ max_count: 10, oneline: true })
+        });
+        
+        const data = await response.json();
+        appendOutput('$ git log --oneline -10', data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function gitPush() {
+    if (!confirm('Are you sure you want to push to the remote repository?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/git/push', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        
+        const data = await response.json();
+        appendOutput('$ git push', data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+async function gitPull() {
+    try {
+        const response = await fetch('/api/git/pull', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+        });
+        
+        const data = await response.json();
+        appendOutput('$ git pull', data.success ? 'success' : 'error');
+        appendOutput(data.output || data.error, data.success ? 'success' : 'error');
+        
+        if (data.success) {
+            refreshStatus();
+        }
+    } catch (error) {
+        appendOutput(`Error: ${error.message}`, 'error');
+    }
+}
+
+function appendOutput(text, type = 'info') {
+    const outputElement = document.getElementById('command-output');
+    const timestamp = new Date().toLocaleTimeString();
+    
+    const colors = {
+        success: 'text-green-400',
+        error: 'text-red-400',
+        info: 'text-blue-400',
+        command: 'text-yellow-400'
+    };
+    
+    const color = colors[type] || colors.info;
+    const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : '💬';
+    
+    outputElement.innerHTML += `\n[${timestamp}] ${prefix} ${text}`;
+    outputElement.scrollTop = outputElement.scrollHeight;
+}
+
+function clearOutput() {
+    document.getElementById('command-output').textContent = 'Ready for Git operations...';
+}
+</script>
+{% endblock %}

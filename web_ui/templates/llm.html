@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}AI Tools - Code Development Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                <i class="fas fa-robot text-2xl"></i>
+            </div>
+            <div class="ml-4">
+                <h1 class="text-2xl font-bold text-gray-900">AI-Powered Code Tools</h1>
+                <p class="text-gray-600">Generate, explain, and refactor code using advanced AI models</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tool Cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Code Generation -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-magic text-xl text-blue-600 mr-3"></i>
+                <h2 class="text-xl font-semibold text-gray-900">Code Generation</h2>
+            </div>
+            
+            <form id="generate-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea name="description" rows="3" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Describe the code you want to generate..."></textarea>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                        <select name="language" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                            <option value="rust">Rust</option>
+                            <option value="go">Go</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Style</label>
+                        <select name="style" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <option value="clean">Clean & Simple</option>
+                            <option value="documented">Well Documented</option>
+                            <option value="optimized">Performance Optimized</option>
+                            <option value="robust">Error Handling</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Context (Optional)</label>
+                    <textarea name="context" rows="2" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              placeholder="Additional context or requirements..."></textarea>
+                </div>
+                
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-play mr-2"></i>Generate Code
+                </button>
+            </form>
+            
+            <div id="generate-output" class="mt-4 hidden">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Generated Code:</h3>
+                <div class="relative">
+                    <div id="generate-result" class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"></div>
+                    <button onclick="copyGeneratedCode()" class="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded text-xs hover:bg-gray-600">
+                        <i class="fas fa-copy mr-1"></i>Copy
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Code Explanation -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center mb-4">
+                <i class="fas fa-lightbulb text-xl text-yellow-600 mr-3"></i>
+                <h2 class="text-xl font-semibold text-gray-900">Code Explanation</h2>
+            </div>
+            
+            <form id="explain-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Code to Explain</label>
+                    <textarea name="code" rows="8" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 font-mono text-sm"
+                              placeholder="Paste your code here..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Detail Level</label>
+                    <select name="detail_level" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                        <option value="high">High Detail</option>
+                        <option value="medium" selected>Medium Detail</option>
+                        <option value="low">Brief Overview</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="w-full bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <i class="fas fa-play mr-2"></i>Explain Code
+                </button>
+            </form>
+            
+            <div id="explain-output" class="mt-4 hidden">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Explanation:</h3>
+                <div id="explain-result" class="bg-gray-50 p-4 rounded-lg border"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Refactoring -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center mb-4">
+            <i class="fas fa-tools text-xl text-green-600 mr-3"></i>
+            <h2 class="text-xl font-semibold text-gray-900">Code Refactoring</h2>
+        </div>
+        
+        <form id="refactor-form" class="space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Original Code</label>
+                    <textarea name="code" rows="12" 
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                              placeholder="Paste the code you want to refactor..."></textarea>
+                </div>
+                
+                <div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                        <select name="language" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500">
+                            <option value="python">Python</option>
+                            <option value="javascript">JavaScript</option>
+                            <option value="typescript">TypeScript</option>
+                            <option value="java">Java</option>
+                            <option value="cpp">C++</option>
+                            <option value="rust">Rust</option>
+                            <option value="go">Go</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Refactoring Goals</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center">
+                                <input type="checkbox" name="goals" value="readability" class="mr-2">
+                                <span class="text-sm">Improve Readability</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="goals" value="performance" class="mr-2">
+                                <span class="text-sm">Optimize Performance</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="goals" value="maintainability" class="mr-2">
+                                <span class="text-sm">Enhance Maintainability</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="goals" value="error_handling" class="mr-2">
+                                <span class="text-sm">Better Error Handling</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="goals" value="documentation" class="mr-2">
+                                <span class="text-sm">Add Documentation</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                <i class="fas fa-play mr-2"></i>Refactor Code
+            </button>
+        </form>
+        
+        <div id="refactor-output" class="mt-6 hidden">
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Refactored Code:</h3>
+            <div class="relative">
+                <div id="refactor-result" class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"></div>
+                <button onclick="copyRefactoredCode()" class="absolute top-2 right-2 bg-gray-700 text-white px-2 py-1 rounded text-xs hover:bg-gray-600">
+                    <i class="fas fa-copy mr-1"></i>Copy
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let generatedCode = '';
+let refactoredCode = '';
+
+// Code Generation
+document.getElementById('generate-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        description: formData.get('description'),
+        language: formData.get('language'),
+        context: formData.get('context'),
+        style: formData.get('style')
+    };
+    
+    const button = e.target.querySelector('button[type="submit"]');
+    showLoading(button);
+    
+    try {
+        const response = await fetch('/api/llm/generate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            generatedCode = result.output;
+            document.getElementById('generate-result').innerHTML = formatOutput(result.output);
+            document.getElementById('generate-output').classList.remove('hidden');
+            showNotification('Code generated successfully!', 'success');
+        } else {
+            showNotification('Error: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showNotification('Failed to generate code: ' + error.message, 'error');
+    } finally {
+        hideLoading(button, 'fas fa-play');
+    }
+});
+
+// Code Explanation
+document.getElementById('explain-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const data = {
+        code: formData.get('code'),
+        detail_level: formData.get('detail_level')
+    };
+    
+    const button = e.target.querySelector('button[type="submit"]');
+    showLoading(button);
+    
+    try {
+        const response = await fetch('/api/llm/explain', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            document.getElementById('explain-result').innerHTML = formatOutput(result.output);
+            document.getElementById('explain-output').classList.remove('hidden');
+            showNotification('Code explanation generated!', 'success');
+        } else {
+            showNotification('Error: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showNotification('Failed to explain code: ' + error.message, 'error');
+    } finally {
+        hideLoading(button, 'fas fa-play');
+    }
+});
+
+// Code Refactoring
+document.getElementById('refactor-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const goals = Array.from(formData.getAll('goals'));
+    
+    const data = {
+        code: formData.get('code'),
+        language: formData.get('language'),
+        goals: goals
+    };
+    
+    const button = e.target.querySelector('button[type="submit"]');
+    showLoading(button);
+    
+    try {
+        const response = await fetch('/api/llm/refactor', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            refactoredCode = result.output;
+            document.getElementById('refactor-result').innerHTML = formatOutput(result.output);
+            document.getElementById('refactor-output').classList.remove('hidden');
+            showNotification('Code refactored successfully!', 'success');
+        } else {
+            showNotification('Error: ' + result.error, 'error');
+        }
+    } catch (error) {
+        showNotification('Failed to refactor code: ' + error.message, 'error');
+    } finally {
+        hideLoading(button, 'fas fa-play');
+    }
+});
+
+// Copy functions
+function copyGeneratedCode() {
+    copyToClipboard(generatedCode);
+}
+
+function copyRefactoredCode() {
+    copyToClipboard(refactoredCode);
+}
+</script>
+{% endblock %}

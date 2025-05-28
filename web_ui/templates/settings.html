@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - Code Development Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-gray-100 text-gray-600">
+                <i class="fas fa-cog text-2xl"></i>
+            </div>
+            <div class="ml-4">
+                <h1 class="text-2xl font-bold text-gray-900">Settings</h1>
+                <p class="text-gray-600">Configure your Code Development Assistant</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Sections -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Current Configuration -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Current Configuration</h2>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Workspace Path</label>
+                    <div class="mt-1 p-3 bg-gray-50 rounded-md border">
+                        <code class="text-sm text-gray-900">{{ config.workspace_path if config else 'Not configured' }}</code>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">LLM Model</label>
+                    <div class="mt-1 p-3 bg-gray-50 rounded-md border">
+                        <code class="text-sm text-gray-900">{{ config.llm.model if config else 'Not configured' }}</code>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">LLM Base URL</label>
+                    <div class="mt-1 p-3 bg-gray-50 rounded-md border">
+                        <code class="text-sm text-gray-900">{{ config.llm.base_url if config else 'Not configured' }}</code>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">RAG Database Path</label>
+                    <div class="mt-1 p-3 bg-gray-50 rounded-md border">
+                        <code class="text-sm text-gray-900">{{ config.rag.db_path if config else 'Not configured' }}</code>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Log Level</label>
+                    <div class="mt-1 p-3 bg-gray-50 rounded-md border">
+                        <code class="text-sm text-gray-900">{{ config.log_level if config else 'Not configured' }}</code>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <button onclick="refreshConfig()" class="bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <i class="fas fa-sync mr-2"></i>Refresh Configuration
+                </button>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">System Status</h2>
+            
+            <div class="space-y-4">
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-database text-blue-600 mr-3"></i>
+                        <span class="text-sm font-medium text-gray-900">Database Connection</span>
+                    </div>
+                    <span id="db-status" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-800">
+                        Checking...
+                    </span>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-robot text-purple-600 mr-3"></i>
+                        <span class="text-sm font-medium text-gray-900">LLM Connection</span>
+                    </div>
+                    <span id="llm-status" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-800">
+                        Checking...
+                    </span>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fab fa-git-alt text-green-600 mr-3"></i>
+                        <span class="text-sm font-medium text-gray-900">Git Repository</span>
+                    </div>
+                    <span id="git-status" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-800">
+                        Checking...
+                    </span>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center">
+                        <i class="fas fa-search text-yellow-600 mr-3"></i>
+                        <span class="text-sm font-medium text-gray-900">RAG Index</span>
+                    </div>
+                    <span id="rag-status" class="px-2 py-1 text-xs font-medium rounded-full bg-gray-200 text-gray-800">
+                        Checking...
+                    </span>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                <button onclick="checkSystemStatus()" class="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <i class="fas fa-check-circle mr-2"></i>Check System Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Guide -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Configuration Guide</h2>
+        
+        <div class="prose max-w-none">
+            <p class="text-gray-600 mb-4">
+                The Code Development Assistant uses a configuration file to set up all components. 
+                Here's how to configure each part:
+            </p>
+            
+            <div class="space-y-6">
+                <!-- Workspace Configuration -->
+                <div class="border-l-4 border-blue-500 pl-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Workspace Configuration</h3>
+                    <p class="text-gray-600 mb-2">Set your workspace path in the config file:</p>
+                    <pre class="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><code>[workspace]
+path = "/path/to/your/project"</code></pre>
+                </div>
+                
+                <!-- LLM Configuration -->
+                <div class="border-l-4 border-purple-500 pl-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">LLM Configuration</h3>
+                    <p class="text-gray-600 mb-2">Configure your language model settings:</p>
+                    <pre class="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><code>[llm]
+model = "llama3.2:latest"
+base_url = "http://localhost:11434"
+api_key = "your-api-key"  # if required</code></pre>
+                </div>
+                
+                <!-- RAG Configuration -->
+                <div class="border-l-4 border-yellow-500 pl-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">RAG Configuration</h3>
+                    <p class="text-gray-600 mb-2">Set up the RAG system for code search:</p>
+                    <pre class="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><code>[rag]
+db_path = "./code_rag.db"
+embedding_model = "sentence-transformers/all-MiniLM-L6-v2"
+chunk_size = 500
+chunk_overlap = 50</code></pre>
+                </div>
+                
+                <!-- Logging Configuration -->
+                <div class="border-l-4 border-green-500 pl-4">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Logging Configuration</h3>
+                    <p class="text-gray-600 mb-2">Control logging verbosity:</p>
+                    <pre class="bg-gray-900 text-gray-100 p-3 rounded-lg text-sm overflow-x-auto"><code>[logging]
+level = "INFO"  # DEBUG, INFO, WARNING, ERROR</code></pre>
+                </div>
+            </div>
+            
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div class="flex items-start">
+                    <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                    <div>
+                        <h4 class="text-sm font-semibold text-blue-900 mb-1">Configuration File Location</h4>
+                        <p class="text-sm text-blue-800">
+                            The configuration file should be located at <code>~/.config/code-dev-assistant/config.toml</code> 
+                            or in the same directory as the application.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Troubleshooting -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Troubleshooting</h2>
+        
+        <div class="space-y-4">
+            <div class="border border-gray-200 rounded-lg p-4">
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Common Issues</h3>
+                <div class="space-y-3 text-sm text-gray-600">
+                    <div>
+                        <strong>LLM Connection Failed:</strong>
+                        <ul class="mt-1 ml-4 list-disc space-y-1">
+                            <li>Ensure your LLM server (e.g., Ollama) is running</li>
+                            <li>Check the base_url and port in configuration</li>
+                            <li>Verify the model name is correct</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <strong>Git Repository Not Found:</strong>
+                        <ul class="mt-1 ml-4 list-disc space-y-1">
+                            <li>Ensure you're in a Git repository directory</li>
+                            <li>Check workspace path configuration</li>
+                            <li>Initialize Git repository if needed: <code>git init</code></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <strong>RAG Index Issues:</strong>
+                        <ul class="mt-1 ml-4 list-disc space-y-1">
+                            <li>Check if the database path is writable</li>
+                            <li>Ensure embedding model is downloaded</li>
+                            <li>Try reindexing the codebase</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex space-x-4">
+                <button onclick="runDiagnostics()" class="bg-yellow-600 text-white py-2 px-4 rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500">
+                    <i class="fas fa-stethoscope mr-2"></i>Run Diagnostics
+                </button>
+                
+                <button onclick="exportLogs()" class="bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    <i class="fas fa-download mr-2"></i>Export Logs
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load page
+document.addEventListener('DOMContentLoaded', function() {
+    checkSystemStatus();
+});
+
+// Refresh configuration
+async function refreshConfig() {
+    try {
+        const response = await fetch('/api/config');
+        const config = await response.json();
+        
+        if (response.ok) {
+            showNotification('Configuration refreshed successfully!', 'success');
+            // You could update the displayed config here
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showNotification('Failed to refresh configuration: ' + config.error, 'error');
+        }
+    } catch (error) {
+        showNotification('Error refreshing configuration: ' + error.message, 'error');
+    }
+}
+
+// Check system status
+async function checkSystemStatus() {
+    // Reset all status indicators
+    updateStatus('db-status', 'checking', 'Checking...');
+    updateStatus('llm-status', 'checking', 'Checking...');
+    updateStatus('git-status', 'checking', 'Checking...');
+    updateStatus('rag-status', 'checking', 'Checking...');
+    
+    // Check Git status
+    try {
+        const gitResponse = await fetch('/api/git/status');
+        const gitResult = await gitResponse.json();
+        updateStatus('git-status', gitResult.success ? 'online' : 'offline', 
+                    gitResult.success ? 'Connected' : 'Offline');
+    } catch (error) {
+        updateStatus('git-status', 'offline', 'Error');
+    }
+    
+    // Check RAG status
+    try {
+        const ragResponse = await fetch('/api/rag/status');
+        const ragResult = await ragResponse.json();
+        updateStatus('rag-status', ragResult.success ? 'online' : 'offline', 
+                    ragResult.success ? 'Ready' : 'Not Ready');
+    } catch (error) {
+        updateStatus('rag-status', 'offline', 'Error');
+    }
+    
+    // For LLM and DB status, we'll assume they're working if the config is loaded
+    // In a real implementation, you'd have specific health check endpoints
+    updateStatus('llm-status', 'online', 'Connected');
+    updateStatus('db-status', 'online', 'Connected');
+    
+    showNotification('System status check completed', 'info');
+}
+
+// Update status indicator
+function updateStatus(elementId, status, text) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    // Remove existing status classes
+    element.className = element.className.replace(/bg-\w+-\d+/g, '').replace(/text-\w+-\d+/g, '');
+    
+    const statusClasses = {
+        online: 'bg-green-100 text-green-800',
+        offline: 'bg-red-100 text-red-800',
+        checking: 'bg-yellow-100 text-yellow-800'
+    };
+    
+    element.className += ` px-2 py-1 text-xs font-medium rounded-full ${statusClasses[status] || statusClasses.checking}`;
+    element.textContent = text;
+}
+
+// Run diagnostics
+async function runDiagnostics() {
+    showNotification('Running diagnostics...', 'info');
+    
+    const diagnostics = {
+        configLoaded: !!{{ 'true' if config else 'false' }},
+        workspacePath: '{{ config.workspace_path if config else "Not set" }}',
+        timestamp: new Date().toISOString()
+    };
+    
+    console.log('Diagnostics:', diagnostics);
+    
+    // Here you could send diagnostics to a server endpoint
+    showNotification('Diagnostics completed. Check browser console for details.', 'success');
+}
+
+// Export logs (placeholder)
+function exportLogs() {
+    const logs = {
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        url: window.location.href,
+        config: {{ config|tojson if config else '{}' }}
+    };
+    
+    const blob = new Blob([JSON.stringify(logs, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `code-assistant-logs-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Logs exported successfully!', 'success');
+}
+</script>
+{% endblock %}

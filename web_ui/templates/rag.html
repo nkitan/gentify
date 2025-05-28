@@ -1,0 +1,444 @@
+{% extends "base.html" %}
+
+{% block title %}Code Search - Code Development Assistant{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex items-center">
+            <i class="fas fa-search text-3xl text-blue-600 mr-4"></i>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Code Search & RAG System</h1>
+                <p class="text-gray-600">Index your codebase and search through it using semantic similarity and AI-powered understanding.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- RAG Status & Controls -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Index Management -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Index Management</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <!-- Index Status -->
+                <div>
+                    <h4 class="text-sm font-medium text-gray-700 mb-2">Current Status</h4>
+                    <div id="rag-status" class="bg-gray-50 rounded-lg p-3 text-sm">
+                        Loading status...
+                    </div>
+                    <button onclick="refreshStatus()" class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+                        <i class="fas fa-sync-alt mr-1"></i>Refresh Status
+                    </button>
+                </div>
+
+                <!-- Index Controls -->
+                <div>
+                    <label for="index-directory" class="block text-sm font-medium text-gray-700 mb-2">Directory to Index</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="index-directory" value="." placeholder="/path/to/directory"
+                               class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Use "." for current directory</p>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="force-reindex" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-700">Force reindex</span>
+                    </label>
+                </div>
+
+                <button onclick="indexCodebase()" class="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-cogs mr-2"></i>Index Codebase
+                </button>
+            </div>
+        </div>
+
+        <!-- Search Interface -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900">Semantic Search</h3>
+            </div>
+            <div class="p-6 space-y-4">
+                <!-- Search Query -->
+                <div>
+                    <label for="search-query" class="block text-sm font-medium text-gray-700 mb-2">Search Query</label>
+                    <textarea id="search-query" rows="3" placeholder="Search for functions that handle user authentication..."
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                </div>
+
+                <!-- Search Options -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="search-limit" class="block text-sm font-medium text-gray-700 mb-1">Results Limit</label>
+                        <select id="search-limit" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="5">5 results</option>
+                            <option value="10">10 results</option>
+                            <option value="20">20 results</option>
+                            <option value="50">50 results</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="similarity-threshold" class="block text-sm font-medium text-gray-700 mb-1">Similarity Threshold</label>
+                        <select id="similarity-threshold" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="0.5">0.5 (Broad)</option>
+                            <option value="0.6">0.6</option>
+                            <option value="0.7" selected>0.7 (Default)</option>
+                            <option value="0.8">0.8</option>
+                            <option value="0.9">0.9 (Strict)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="searchCode()" class="w-full bg-green-600 text-white px-4 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                    <i class="fas fa-search mr-2"></i>Search Code
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">Search Results</h3>
+            <button onclick="clearResults()" class="text-gray-500 hover:text-gray-700 text-sm">
+                <i class="fas fa-trash mr-1"></i>Clear
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="search-results" class="space-y-4">
+                <div class="text-center text-gray-500 py-8">
+                    <i class="fas fa-search text-4xl mb-4 opacity-50"></i>
+                    <p>Enter a search query to find relevant code in your indexed codebase.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Viewer -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Code Context</h3>
+        </div>
+        <div class="p-6">
+            <div class="space-y-4">
+                <div>
+                    <label for="context-identifier" class="block text-sm font-medium text-gray-700 mb-2">Function/Class Name</label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="context-identifier" placeholder="function_name or ClassName"
+                               class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <button onclick="getContext()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-eye mr-2"></i>Get Context
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Get detailed context and related code for a specific function or class</p>
+                </div>
+            </div>
+            
+            <div id="context-results" class="mt-6">
+                <!-- Context results will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Index Operations Log -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-gray-900">Operation Log</h3>
+            <button onclick="clearLog()" class="text-gray-500 hover:text-gray-700 text-sm">
+                <i class="fas fa-trash mr-1"></i>Clear
+            </button>
+        </div>
+        <div class="p-6">
+            <div id="operation-log" class="bg-gray-900 text-green-400 rounded-lg p-4 font-mono text-sm min-h-32 max-h-64 overflow-y-auto whitespace-pre-wrap">
+                RAG system ready...
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Load initial status
+document.addEventListener('DOMContentLoaded', function() {
+    refreshStatus();
+});
+
+async function refreshStatus() {
+    const statusElement = document.getElementById('rag-status');
+    statusElement.innerHTML = '<i class="fas fa-spinner loading"></i> Loading...';
+    
+    try {
+        const response = await fetch('/api/rag/status');
+        const data = await response.json();
+        
+        if (data.success) {
+            statusElement.innerHTML = `<div class="text-green-700">${data.output}</div>`;
+        } else {
+            statusElement.innerHTML = `<div class="text-red-700">Error: ${data.error}</div>`;
+        }
+    } catch (error) {
+        statusElement.innerHTML = `<div class="text-red-700">Error: ${error.message}</div>`;
+    }
+}
+
+async function indexCodebase() {
+    const directoryElement = document.getElementById('index-directory');
+    const forceElement = document.getElementById('force-reindex');
+    
+    const directory = directoryElement.value.trim() || '.';
+    const forceReindex = forceElement.checked;
+    
+    appendLog('Starting codebase indexing...', 'info');
+    
+    try {
+        const response = await fetch('/api/rag/index', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                directory: directory,
+                force_reindex: forceReindex
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            appendLog('✅ Indexing completed successfully', 'success');
+            appendLog(data.output, 'success');
+            refreshStatus();
+        } else {
+            appendLog('❌ Indexing failed', 'error');
+            appendLog(data.error, 'error');
+        }
+    } catch (error) {
+        appendLog('❌ Indexing error', 'error');
+        appendLog(error.message, 'error');
+    }
+}
+
+async function searchCode() {
+    const queryElement = document.getElementById('search-query');
+    const limitElement = document.getElementById('search-limit');
+    const thresholdElement = document.getElementById('similarity-threshold');
+    
+    const query = queryElement.value.trim();
+    const limit = parseInt(limitElement.value);
+    const threshold = parseFloat(thresholdElement.value);
+    
+    if (!query) {
+        showNotification('Please enter a search query', 'warning');
+        return;
+    }
+    
+    const resultsElement = document.getElementById('search-results');
+    resultsElement.innerHTML = '<div class="text-center py-8"><i class="fas fa-spinner loading text-2xl"></i><p class="mt-2">Searching...</p></div>';
+    
+    appendLog(`Searching for: "${query}"`, 'info');
+    
+    try {
+        const response = await fetch('/api/rag/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                query: query,
+                limit: limit,
+                similarity_threshold: threshold
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySearchResults(data.output, query);
+            appendLog('✅ Search completed', 'success');
+        } else {
+            resultsElement.innerHTML = `<div class="text-red-600 text-center py-8">Search failed: ${data.error}</div>`;
+            appendLog('❌ Search failed', 'error');
+            appendLog(data.error, 'error');
+        }
+    } catch (error) {
+        resultsElement.innerHTML = `<div class="text-red-600 text-center py-8">Search error: ${error.message}</div>`;
+        appendLog('❌ Search error', 'error');
+        appendLog(error.message, 'error');
+    }
+}
+
+function displaySearchResults(output, query) {
+    const resultsElement = document.getElementById('search-results');
+    
+    if (!output || output.includes('No results found')) {
+        resultsElement.innerHTML = `
+            <div class="text-center text-gray-500 py-8">
+                <i class="fas fa-search text-4xl mb-4 opacity-50"></i>
+                <p>No results found for "${query}"</p>
+                <p class="text-sm">Try adjusting your search query or lowering the similarity threshold.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Parse the output to create formatted results
+    const results = parseSearchResults(output);
+    
+    if (results.length === 0) {
+        resultsElement.innerHTML = `
+            <div class="text-center text-gray-500 py-8">
+                <i class="fas fa-search text-4xl mb-4 opacity-50"></i>
+                <p>No structured results found</p>
+                <pre class="text-left mt-4 bg-gray-100 p-4 rounded text-xs">${output}</pre>
+            </div>
+        `;
+        return;
+    }
+    
+    resultsElement.innerHTML = results.map((result, index) => `
+        <div class="border rounded-lg p-4 hover:bg-gray-50">
+            <div class="flex justify-between items-start mb-2">
+                <div class="flex-1">
+                    <h4 class="font-semibold text-gray-900">${result.title || `Result ${index + 1}`}</h4>
+                    <p class="text-sm text-gray-600">${result.file || 'Unknown file'}</p>
+                </div>
+                <div class="text-sm text-gray-500">
+                    ${result.score ? `Score: ${result.score}` : ''}
+                </div>
+            </div>
+            <div class="bg-gray-50 rounded p-3">
+                <pre class="text-sm overflow-x-auto whitespace-pre-wrap"><code>${result.content}</code></pre>
+            </div>
+            <div class="mt-2 flex space-x-2">
+                <button onclick="copyToClipboard(\`${result.content.replace(/`/g, '\\`')}\`)" 
+                        class="text-blue-600 hover:text-blue-800 text-sm">
+                    <i class="fas fa-copy mr-1"></i>Copy
+                </button>
+                ${result.file ? `
+                    <button onclick="showFileLocation('${result.file}')" 
+                            class="text-green-600 hover:text-green-800 text-sm">
+                        <i class="fas fa-file mr-1"></i>View File
+                    </button>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+}
+
+function parseSearchResults(output) {
+    // Simple parser for search results
+    // This is a basic implementation - you might want to enhance based on actual output format
+    try {
+        if (output.includes('```')) {
+            const parts = output.split('```');
+            const results = [];
+            for (let i = 1; i < parts.length; i += 2) {
+                if (parts[i]) {
+                    results.push({
+                        content: parts[i].trim(),
+                        title: `Code Block ${Math.floor(i/2) + 1}`,
+                        file: 'Unknown'
+                    });
+                }
+            }
+            return results;
+        } else {
+            // Single result
+            return [{
+                content: output,
+                title: 'Search Result',
+                file: 'Multiple files'
+            }];
+        }
+    } catch (error) {
+        return [{
+            content: output,
+            title: 'Raw Result',
+            file: 'Unknown'
+        }];
+    }
+}
+
+async function getContext() {
+    const identifierElement = document.getElementById('context-identifier');
+    const identifier = identifierElement.value.trim();
+    
+    if (!identifier) {
+        showNotification('Please enter a function or class name', 'warning');
+        return;
+    }
+    
+    const contextElement = document.getElementById('context-results');
+    contextElement.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner loading"></i> Loading context...</div>';
+    
+    appendLog(`Getting context for: "${identifier}"`, 'info');
+    
+    try {
+        const response = await fetch('/api/rag/context', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                identifier: identifier,
+                include_related: true
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            contextElement.innerHTML = `
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-semibold mb-2">Context for "${identifier}"</h4>
+                    <pre class="text-sm overflow-x-auto whitespace-pre-wrap"><code>${data.output}</code></pre>
+                    <button onclick="copyToClipboard(\`${data.output.replace(/`/g, '\\`')}\`)" 
+                            class="mt-2 text-blue-600 hover:text-blue-800 text-sm">
+                        <i class="fas fa-copy mr-1"></i>Copy Context
+                    </button>
+                </div>
+            `;
+            appendLog('✅ Context retrieved', 'success');
+        } else {
+            contextElement.innerHTML = `<div class="text-red-600">Context not found: ${data.error}</div>`;
+            appendLog('❌ Context retrieval failed', 'error');
+        }
+    } catch (error) {
+        contextElement.innerHTML = `<div class="text-red-600">Error: ${error.message}</div>`;
+        appendLog('❌ Context error', 'error');
+    }
+}
+
+function clearResults() {
+    document.getElementById('search-results').innerHTML = `
+        <div class="text-center text-gray-500 py-8">
+            <i class="fas fa-search text-4xl mb-4 opacity-50"></i>
+            <p>Enter a search query to find relevant code in your indexed codebase.</p>
+        </div>
+    `;
+}
+
+function showFileLocation(filePath) {
+    showNotification(`File location: ${filePath}`, 'info');
+}
+
+function appendLog(message, type = 'info') {
+    const logElement = document.getElementById('operation-log');
+    const timestamp = new Date().toLocaleTimeString();
+    
+    const colors = {
+        success: '✅',
+        error: '❌', 
+        info: '💬',
+        warning: '⚠️'
+    };
+    
+    const prefix = colors[type] || colors.info;
+    logElement.textContent += `\n[${timestamp}] ${prefix} ${message}`;
+    logElement.scrollTop = logElement.scrollHeight;
+}
+
+function clearLog() {
+    document.getElementById('operation-log').textContent = 'RAG system ready...';
+}
+</script>
+{% endblock %}
