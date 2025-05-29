@@ -1,0 +1,57 @@
+Processing started at 2024-01-15 09:00:15
+INFO: Initializing data processing pipeline
+INFO: Loading configuration from config/config.yaml
+INFO: Configuration loaded successfully
+
+Processing batch 1 of 5
+DEBUG: Reading input file: sales_data.csv
+DEBUG: Found 25 records to process
+INFO: Data validation started
+INFO: Validating record format and data types
+DEBUG: Checking for missing values in critical fields
+INFO: Data validation completed - 25 valid records, 0 invalid records
+
+Processing batch 2 of 5
+DEBUG: Applying data transformations
+INFO: Converting date formats to ISO standard
+INFO: Calculating derived fields (revenue, growth rates)
+DEBUG: Adding geographical region mappings
+INFO: Data transformation completed successfully
+
+Processing batch 3 of 5
+INFO: Starting data enrichment phase
+DEBUG: Fetching external data for product categories
+INFO: Product categorization completed
+DEBUG: Applying customer segmentation rules
+INFO: Customer segments assigned based on purchase history
+WARN: 2 records missing customer region data - using default values
+
+Processing batch 4 of 5
+INFO: Quality assurance checks initiated
+DEBUG: Running statistical validation on numerical fields
+INFO: Price range validation: all values within expected bounds
+DEBUG: Checking for duplicate customer IDs
+INFO: No duplicate records found
+DEBUG: Validating date consistency across records
+INFO: All temporal data validated successfully
+
+Processing batch 5 of 5
+INFO: Generating summary statistics
+DEBUG: Calculating total revenue: $15,799.44
+DEBUG: Average order value: $631.98
+DEBUG: Most popular category: Electronics (16 items)
+INFO: Processing pipeline completed successfully
+
+Final Results:
+- Total records processed: 25
+- Valid records: 25
+- Invalid records: 0
+- Processing time: 4.2 seconds
+- Output files generated:
+  * processed_sales_data.csv
+  * sales_summary_report.json
+  * data_quality_metrics.txt
+
+Processing completed at 2024-01-15 09:04:22
+INFO: All operations completed successfully
+INFO: Log file saved to logs/processing_2024-01-15.log

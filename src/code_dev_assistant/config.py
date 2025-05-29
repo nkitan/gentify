@@ -107,23 +107,23 @@ class AssistantConfig:
         config = cls.default()
         
         # Override with environment variables
-        workspace_env = os.getenv('CODE_ASSISTANT_WORKSPACE')
+        workspace_env = os.getenv('WORKSPACE_PATH')
         if workspace_env:
             config.workspace_path = workspace_env
         
-        ollama_url = os.getenv('OLLAMA_BASE_URL')
-        if ollama_url:
-            config.llm.base_url = ollama_url
+        llm_url = os.getenv('LLM_BASE_URL')
+        if llm_url:
+            config.llm.base_url = llm_url
         
-        ollama_model = os.getenv('OLLAMA_MODEL')
-        if ollama_model:
-            config.llm.model = ollama_model
+        llm_model = os.getenv('LLM_MODEL')
+        if llm_model:
+            config.llm.model = llm_model
         
         rag_db_path = os.getenv('RAG_DB_PATH')
         if rag_db_path:
             config.rag.db_path = rag_db_path
         
-        embedding_model = os.getenv('EMBEDDING_MODEL')
+        embedding_model = os.getenv('RAG_EMBEDDING_MODEL')
         if embedding_model:
             config.rag.embedding_model = embedding_model
         

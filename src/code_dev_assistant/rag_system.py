@@ -70,7 +70,7 @@ class CodeDocument:
     docstring: Optional[str] = None
     language: Optional[str] = None
     embedding: Optional[List[float]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[str] = None  # JSON string
 
 
 class CodeRAG:
@@ -104,8 +104,12 @@ class CodeRAG:
             # Try to open existing table or create new one
             try:
                 self.table = self.db.open_table("code_chunks")
-            except FileNotFoundError:
+            except Exception:
                 # Create new table with schema
+                # First, get the actual embedding dimension from the model
+                test_embedding = self.embedding_model.encode(["test"])
+                embedding_dim = len(test_embedding[0])
+                
                 sample_data = [{
                     "id": "sample",
                     "content": "sample code",
@@ -116,10 +120,14 @@ class CodeRAG:
                     "name": "sample_function",
                     "docstring": "Sample docstring",
                     "language": "python",
-                    "embedding": [0.0] * 384,  # MiniLM embedding dimension
-                    "metadata": {}
+                    "embedding": [0.0] * embedding_dim,
+                    "metadata": "{}"
                 }]
-                self.table = self.db.create_table("code_chunks", sample_data)
+                
+                # Create table with pandas DataFrame
+                df = pd.DataFrame(sample_data)
+                self.table = self.db.create_table("code_chunks", df)
+                
                 # Remove sample data
                 self.table.delete("id = 'sample'")
             
@@ -277,13 +285,17 @@ class CodeRAG:
     async def _index_codebase(self, directory: str, file_extensions: List[str], 
                             exclude_dirs: List[str], force_reindex: bool) -> List[types.TextContent]:
         """Index the codebase for RAG retrieval."""
-        if not DEPENDENCIES_AVAILABLE or not self.table or not self.embedding_model:
+        if not DEPENDENCIES_AVAILABLE or not self._initialized or self.table is None or self.embedding_model is None:
             return [types.TextContent(type="text", text="RAG system not properly initialized")]
         
         try:
             indexed_files = 0
             total_chunks = 0
             search_dir = Path(directory).resolve()
+            
+            print(f"DEBUG: Indexing directory: {search_dir}")
+            print(f"DEBUG: File extensions: {file_extensions}")
+            print(f"DEBUG: Exclude dirs: {exclude_dirs}")
             
             # Track existing files to detect deletions
             existing_files = set()
@@ -296,9 +308,12 @@ class CodeRAG:
             current_files = set()
             
             for ext in file_extensions:
+                print(f"DEBUG: Looking for files with extension: {ext}")
                 for file_path in search_dir.rglob(f"*{ext}"):
+                    print(f"DEBUG: Found file: {file_path}")
                     # Skip excluded directories
                     if any(exclude_dir in file_path.parts for exclude_dir in exclude_dirs):
+                        print(f"DEBUG: Skipping excluded file: {file_path}")
                         continue
                     
                     file_path_str = str(file_path)
@@ -306,24 +321,65 @@ class CodeRAG:
                     
                     # Check if file needs reindexing
                     if not force_reindex and await self._is_file_indexed(file_path_str):
+                        print(f"DEBUG: File already indexed: {file_path_str}")
                         continue
                     
                     try:
+                        print(f"DEBUG: Processing file: {file_path_str}")
                         # Remove existing chunks for this file
                         if file_path_str in existing_files:
                             self.table.delete(f"file_path = '{file_path_str}'")
                         
                         # Extract and index chunks
                         chunks = await self._extract_and_embed_chunks(file_path_str)
+                        print(f"DEBUG: Extracted {len(chunks)} chunks from {file_path_str}")
                         if chunks:
-                            # Convert chunks to dict format for LanceDB
-                            chunk_dicts = []
+                            # Convert chunks to dict format for LanceDB with proper vector handling
+                            chunk_data = []
                             for chunk in chunks:
-                                chunk_dict = asdict(chunk)
-                                chunk_dicts.append(chunk_dict)
+                                # Convert to dict manually to ensure proper types
+                                chunk_data.append({
+                                    "id": chunk.id,
+                                    "content": chunk.content,
+                                    "file_path": chunk.file_path,
+                                    "chunk_type": chunk.chunk_type,
+                                    "start_line": chunk.start_line,
+                                    "end_line": chunk.end_line,
+                                    "name": chunk.name,
+                                    "docstring": chunk.docstring,
+                                    "language": chunk.language,
+                                    "embedding": chunk.embedding,  # Keep as list
+                                    "metadata": chunk.metadata
+                                })
+                            
+                            # Create DataFrame with proper dtypes
+                            df = pd.DataFrame(chunk_data)
+                            
+                            # Convert embedding column to proper format for LanceDB
+                            import pyarrow as pa
+                            import numpy as np
+                            
+                            # Create proper PyArrow schema with fixed-size list for embeddings
+                            embedding_dim = len(chunk_data[0]['embedding'])
+                            schema = pa.schema([
+                                ('id', pa.string()),
+                                ('content', pa.string()),
+                                ('file_path', pa.string()),
+                                ('chunk_type', pa.string()),
+                                ('start_line', pa.int64()),
+                                ('end_line', pa.int64()),
+                                ('name', pa.string()),
+                                ('docstring', pa.string()),
+                                ('language', pa.string()),
+                                ('embedding', pa.list_(pa.float32(), embedding_dim)),
+                                ('metadata', pa.string())
+                            ])
+                            
+                            # Convert to PyArrow table with explicit schema
+                            table = pa.Table.from_pandas(df, schema=schema)
                             
                             # Add to database
-                            self.table.add(chunk_dicts)
+                            self.table.add(table)
                             
                             indexed_files += 1
                             total_chunks += len(chunks)
@@ -395,10 +451,10 @@ class CodeRAG:
                     docstring=chunk.docstring,
                     language=chunk.language,
                     embedding=embedding,
-                    metadata={
+                    metadata=json.dumps({
                         "file_size": len(content),
                         "chunk_size": len(chunk.content)
-                    }
+                    })
                 )
                 
                 documents.append(doc)
@@ -433,7 +489,7 @@ class CodeRAG:
     async def _search_code(self, query: str, limit: int, similarity_threshold: float,
                           filter_language: Optional[str], filter_type: Optional[str]) -> List[types.TextContent]:
         """Search for code using semantic similarity."""
-        if not DEPENDENCIES_AVAILABLE or not self.table or not self.embedding_model:
+        if not DEPENDENCIES_AVAILABLE or not self._initialized or self.table is None or self.embedding_model is None:
             return [types.TextContent(type="text", text="RAG system not properly initialized")]
             
         try:
@@ -444,8 +500,8 @@ class CodeRAG:
             else:
                 query_embedding = [float(x) for x in embedding_result]  # Ensure float type
             
-            # Build search
-            search = self.table.search(query_embedding).limit(limit * 2)  # Get more for filtering
+            # Build search - specify the vector column name
+            search = self.table.search(query_embedding, vector_column_name="embedding").limit(limit * 2)  # Get more for filtering
             
             # Apply filters
             where_clauses = []
@@ -503,7 +559,7 @@ class CodeRAG:
     
     async def _get_context(self, identifier: str, include_related: bool) -> List[types.TextContent]:
         """Get context for a specific function or class."""
-        if not DEPENDENCIES_AVAILABLE or not self.table:
+        if not DEPENDENCIES_AVAILABLE or not self._initialized or self.table is None:
             return [types.TextContent(type="text", text="RAG system not properly initialized")]
             
         try:
@@ -549,7 +605,10 @@ class CodeRAG:
     
     async def _rag_status(self) -> List[types.TextContent]:
         """Get RAG system status."""
-        if not DEPENDENCIES_AVAILABLE or not self.table:
+        if not DEPENDENCIES_AVAILABLE:
+            return [types.TextContent(type="text", text="RAG system dependencies not available")]
+        
+        if not self._initialized or self.table is None:
             return [types.TextContent(type="text", text="RAG system not properly initialized")]
             
         try:
@@ -607,7 +666,14 @@ class CodeRAG:
             # Drop and recreate table
             self.db.drop_table("code_chunks")
             
-            # Recreate empty table
+            # Recreate empty table with correct schema
+            if self.embedding_model:
+                # Get the actual embedding dimension from the model
+                test_embedding = self.embedding_model.encode(["test"])
+                embedding_dim = len(test_embedding[0])
+            else:
+                embedding_dim = 384  # Default dimension for all-MiniLM-L6-v2
+            
             sample_data = [{
                 "id": "sample",
                 "content": "sample code",
@@ -618,10 +684,32 @@ class CodeRAG:
                 "name": "sample_function",
                 "docstring": "Sample docstring",
                 "language": "python",
-                "embedding": [0.0] * 384,
-                "metadata": {}
+                "embedding": [0.0] * embedding_dim,
+                "metadata": "{}"
             }]
-            self.table = self.db.create_table("code_chunks", sample_data)
+            
+            # Create table with pandas DataFrame
+            import pyarrow as pa
+            df = pd.DataFrame(sample_data)
+            
+            # Create proper PyArrow schema with fixed-size list for embeddings
+            schema = pa.schema([
+                ('id', pa.string()),
+                ('content', pa.string()),
+                ('file_path', pa.string()),
+                ('chunk_type', pa.string()),
+                ('start_line', pa.int64()),
+                ('end_line', pa.int64()),
+                ('name', pa.string()),
+                ('docstring', pa.string()),
+                ('language', pa.string()),
+                ('embedding', pa.list_(pa.float32(), embedding_dim)),
+                ('metadata', pa.string())
+            ])
+            
+            # Convert to PyArrow table with explicit schema
+            table = pa.Table.from_pandas(df, schema=schema)
+            self.table = self.db.create_table("code_chunks", table)
             self.table.delete("id = 'sample'")
             
             return [types.TextContent(type="text", text="RAG index cleared successfully.")]

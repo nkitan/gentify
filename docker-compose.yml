@@ -1,0 +1,200 @@
+services:
+  # Ollama LLM Service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: gentify-ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./logs/ollama:/var/log/ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - code-dev-network
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_ORIGINS=*
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "ollama"
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+
+  # Main Code Development Assistant Web UI
+  code-dev-assistant-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: gentify-web-ui
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./workspace:/app/workspace
+      - ./code_rag_db:/app/code_rag_db
+      - ./logs/web:/app/logs
+      - ./config:/app/config
+    networks:
+      - code-dev-network
+    environment:
+      - FLASK_ENV=production
+      - SECRET_KEY=${SECRET_KEY:-production-secret-key-change-me}
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - RAG_DB_PATH=/app/code_rag_db
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - WORKSPACE_PATH=/app/workspace
+      - LLM_BASE_URL=http://ollama:11434
+      - LLM_MODEL=${LLM_MODEL:-qwen2.5-coder:7b}
+      - RAG_EMBEDDING_MODEL=${RAG_EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "/app/healthcheck.py", "web"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        tag: "web-ui"
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.5'
+    command: ["python", "web_ui_runner.py", "--host", "0.0.0.0", "--port", "5000"]
+
+  # MCP Server Service (optional, for standalone MCP usage)
+  code-dev-assistant-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: gentify-mcp-server
+    restart: unless-stopped
+    volumes:
+      - ./workspace:/app/workspace
+      - ./code_rag_db:/app/code_rag_db
+      - ./logs/mcp:/app/logs
+      - ./config:/app/config
+    networks:
+      - code-dev-network
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - RAG_DB_PATH=/app/code_rag_db
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - WORKSPACE_PATH=/app/workspace
+      - LLM_BASE_URL=http://ollama:11434
+      - LLM_MODEL=${LLM_MODEL:-qwen2.5-coder:7b}
+      - RAG_EMBEDDING_MODEL=${RAG_EMBEDDING_MODEL:-all-MiniLM-L6-v2}
+    depends_on:
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "/app/healthcheck.py", "mcp"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        tag: "mcp-server"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    command: ["uv", "run", "code-dev-assistant"]
+    profiles:
+      - mcp-standalone
+
+  # Log aggregation service (optional)
+  log-collector:
+    image: fluent/fluentd:v1.16-debian-1
+    container_name: gentify-log-collector
+    restart: unless-stopped
+    volumes:
+      - ./logs:/fluentd/log
+      - ./config/fluentd.conf:/fluentd/etc/fluent.conf:ro
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+    networks:
+      - code-dev-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+        tag: "log-collector"
+    profiles:
+      - logging
+
+  # Monitoring service (optional)
+  monitoring:
+    image: prom/node-exporter:latest
+    container_name: code-dev-assistant-monitoring
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - code-dev-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "5m"
+        max-file: "2"
+        tag: "monitoring"
+    profiles:
+      - monitoring
+
+volumes:
+  ollama_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ./data/ollama
+
+networks:
+  code-dev-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16

@@ -4,7 +4,6 @@ Git operation tools using GitPython for version control operations.
 import os
 from pathlib import Path
 from typing import List, Dict, Optional, Any, Sequence
-import git
 from git import Repo, InvalidGitRepositoryError
 import mcp.types as types
 

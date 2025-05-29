@@ -1,0 +1,26 @@
+Date,Product,Category,Quantity,Price,Revenue,Customer_ID,Region
+2024-01-15,Laptop Pro,Electronics,2,1299.99,2599.98,CUST001,North America
+2024-01-16,Wireless Mouse,Electronics,5,29.99,149.95,CUST002,Europe
+2024-01-17,Office Chair,Furniture,1,249.99,249.99,CUST003,Asia
+2024-01-18,Smartphone X,Electronics,3,899.99,2699.97,CUST004,North America
+2024-01-19,Standing Desk,Furniture,1,499.99,499.99,CUST005,Europe
+2024-01-20,Tablet Ultra,Electronics,2,549.99,1099.98,CUST006,Asia
+2024-01-21,Wireless Headphones,Electronics,4,199.99,799.96,CUST007,North America
+2024-01-22,Monitor 4K,Electronics,1,399.99,399.99,CUST008,Europe
+2024-01-23,Keyboard Mechanical,Electronics,3,129.99,389.97,CUST009,Asia
+2024-01-24,Coffee Maker,Appliances,2,89.99,179.98,CUST010,North America
+2024-01-25,Blender Pro,Appliances,1,149.99,149.99,CUST011,Europe
+2024-01-26,Air Purifier,Appliances,1,299.99,299.99,CUST012,Asia
+2024-01-27,Smart Watch,Electronics,5,249.99,1249.95,CUST013,North America
+2024-01-28,Bookshelf,Furniture,2,179.99,359.98,CUST014,Europe
+2024-01-29,Desk Lamp,Furniture,3,49.99,149.97,CUST015,Asia
+2024-01-30,Gaming Console,Electronics,1,499.99,499.99,CUST016,North America
+2024-02-01,Microwave,Appliances,1,199.99,199.99,CUST017,Europe
+2024-02-02,Vacuum Cleaner,Appliances,1,249.99,249.99,CUST018,Asia
+2024-02-03,Webcam HD,Electronics,6,79.99,479.94,CUST019,North America
+2024-02-04,Printer Laser,Electronics,1,189.99,189.99,CUST020,Europe
+2024-02-05,Router WiFi,Electronics,2,99.99,199.98,CUST021,Asia
+2024-02-06,External Drive,Electronics,4,119.99,479.96,CUST022,North America
+2024-02-07,Sound Bar,Electronics,1,299.99,299.99,CUST023,Europe
+2024-02-08,Filing Cabinet,Furniture,1,149.99,149.99,CUST024,Asia
+2024-02-09,Dishwasher,Appliances,1,699.99,699.99,CUST025,North America

@@ -26,6 +26,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "autogen-agentchat>=0.4.0",
     "flask>=3.0.0",
+    "pandas>=2.2.3",
 ]
 [[project.authors]]
 name = "nkitan"

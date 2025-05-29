@@ -11,3 +11,9 @@ wheels/
 uv.lock
 .python-version
 web_ui_validation_report.json
+
+# App data
+code_rag_db/
+
+# Test results
+*test_results.json

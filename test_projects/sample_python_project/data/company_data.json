@@ -1,0 +1,155 @@
+{
+    "company": {
+        "name": "TechCorp Solutions",
+        "founded": 2010,
+        "headquarters": "San Francisco, CA",
+        "industry": "Technology",
+        "employees": 1250,
+        "revenue_2023": 180000000,
+        "is_public": true,
+        "stock_symbol": "TCHS"
+    },
+    "departments": [
+        {
+            "id": "DEPT001",
+            "name": "Engineering",
+            "head": "Sarah Johnson",
+            "employees": 450,
+            "budget": 25000000,
+            "teams": [
+                {
+                    "name": "Frontend Development",
+                    "lead": "Mike Chen",
+                    "members": 35,
+                    "technologies": ["React", "TypeScript", "Next.js", "Tailwind CSS"]
+                },
+                {
+                    "name": "Backend Development",
+                    "lead": "Emily Rodriguez",
+                    "members": 42,
+                    "technologies": ["Python", "Django", "PostgreSQL", "Redis"]
+                },
+                {
+                    "name": "DevOps",
+                    "lead": "Alex Thompson",
+                    "members": 28,
+                    "technologies": ["AWS", "Docker", "Kubernetes", "Terraform"]
+                },
+                {
+                    "name": "Mobile Development",
+                    "lead": "Priya Patel",
+                    "members": 25,
+                    "technologies": ["React Native", "Flutter", "Swift", "Kotlin"]
+                }
+            ]
+        },
+        {
+            "id": "DEPT002",
+            "name": "Product Management",
+            "head": "David Kim",
+            "employees": 85,
+            "budget": 8500000,
+            "teams": [
+                {
+                    "name": "Product Strategy",
+                    "lead": "Lisa Wang",
+                    "members": 15,
+                    "technologies": ["Figma", "Jira", "Confluence", "Analytics"]
+                },
+                {
+                    "name": "UX/UI Design",
+                    "lead": "Carlos Mendez",
+                    "members": 22,
+                    "technologies": ["Figma", "Adobe Creative Suite", "Sketch", "InVision"]
+                }
+            ]
+        },
+        {
+            "id": "DEPT003",
+            "name": "Sales & Marketing",
+            "head": "Jennifer Brown",
+            "employees": 320,
+            "budget": 45000000,
+            "teams": [
+                {
+                    "name": "Digital Marketing",
+                    "lead": "Robert Wilson",
+                    "members": 45,
+                    "technologies": ["Google Analytics", "HubSpot", "Salesforce", "SEMrush"]
+                },
+                {
+                    "name": "Sales Operations",
+                    "lead": "Amanda Davis",
+                    "members": 65,
+                    "technologies": ["Salesforce", "Outreach", "LinkedIn Sales Navigator", "Zoom"]
+                }
+            ]
+        }
+    ],
+    "products": [
+        {
+            "id": "PROD001",
+            "name": "CloudSync Platform",
+            "category": "Enterprise Software",
+            "launch_date": "2019-03-15",
+            "current_version": "3.2.1",
+            "pricing": {
+                "starter": 49.99,
+                "professional": 149.99,
+                "enterprise": 499.99
+            },
+            "features": [
+                "Real-time synchronization",
+                "End-to-end encryption",
+                "Advanced analytics",
+                "API integration",
+                "Multi-platform support"
+            ],
+            "active_users": 125000,
+            "customer_satisfaction": 4.7
+        },
+        {
+            "id": "PROD002",
+            "name": "DataViz Pro",
+            "category": "Analytics",
+            "launch_date": "2021-08-22",
+            "current_version": "2.1.3",
+            "pricing": {
+                "basic": 29.99,
+                "pro": 89.99,
+                "enterprise": 299.99
+            },
+            "features": [
+                "Interactive dashboards",
+                "Custom visualizations",
+                "Real-time data streaming",
+                "Collaboration tools",
+                "Export capabilities"
+            ],
+            "active_users": 78000,
+            "customer_satisfaction": 4.5
+        }
+    ],
+    "financial_data": {
+        "quarterly_revenue": [
+            {"quarter": "Q1 2023", "revenue": 42000000, "growth": 12.5},
+            {"quarter": "Q2 2023", "revenue": 45000000, "growth": 15.2},
+            {"quarter": "Q3 2023", "revenue": 47000000, "growth": 18.1},
+            {"quarter": "Q4 2023", "revenue": 46000000, "growth": 16.8}
+        ],
+        "expenses": {
+            "salaries": 85000000,
+            "marketing": 25000000,
+            "r_and_d": 30000000,
+            "operations": 15000000,
+            "other": 8000000
+        }
+    },
+    "metrics": {
+        "customer_acquisition_cost": 245.50,
+        "customer_lifetime_value": 1850.75,
+        "monthly_churn_rate": 0.035,
+        "net_promoter_score": 67,
+        "employee_satisfaction": 4.2
+    }
+}

@@ -1,0 +1,32 @@
+database:
+  host: localhost
+  port: 5432
+  name: sample_db
+  user: admin
+  password: secret123
+
+api:
+  base_url: https://api.example.com
+  timeout: 30
+  max_retries: 3
+  api_key: your_api_key_here
+
+logging:
+  level: INFO
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: logs/application.log
+
+features:
+  enable_caching: true
+  enable_metrics: false
+  debug_mode: false
+
+data_processing:
+  chunk_size: 1000
+  max_workers: 4
+  output_format: json
+
+web_scraping:
+  user_agent: "SampleBot/1.0"
+  delay_between_requests: 1.0
+  max_concurrent_requests: 5

@@ -1,0 +1,93 @@
+# Docker ignore file for Code Development Assistant
+# Build context optimization
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+logs/
+*.log
+
+# Data directories (will be mounted as volumes)
+data/
+code_rag_db/
+workspace/
+
+# Config files (will be mounted separately)
+config/
+.code-assistant.json
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Tests
+tests/
+test_projects/
+*_test.py
+*test*.json
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+
+# Docker files (except Dockerfile)
+docker-compose*.yml
+.dockerignore
+
+# Lock files (copied separately)
+uv.lock
+
+# Development scripts
+web_ui_validator.py
+web_ui_validation_report.json

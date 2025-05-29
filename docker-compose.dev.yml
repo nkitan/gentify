@@ -1,0 +1,50 @@
+# Docker Compose Development Override
+# Use with: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
+
+version: '3.8'
+
+services:
+  code-dev-assistant-web:
+    environment:
+      - FLASK_ENV=development
+      - LOG_LEVEL=DEBUG
+    volumes:
+      # Mount source code for hot reloading
+      - ./src:/app/src:ro
+      - ./web_ui:/app/web_ui:ro
+      - ./web_ui_runner.py:/app/web_ui_runner.py:ro
+    command: ["python", "web_ui_runner.py", "--host", "0.0.0.0", "--port", "5000", "--debug"]
+    ports:
+      # Expose additional debug port
+      - "5000:5000"
+      - "5678:5678"  # For remote debugging
+
+  code-dev-assistant-mcp:
+    environment:
+      - LOG_LEVEL=DEBUG
+    volumes:
+      # Mount source code for development
+      - ./src:/app/src:ro
+    profiles:
+      - mcp-standalone
+
+  # Development database for testing
+  dev-postgres:
+    image: postgres:15-alpine
+    container_name: code-dev-assistant-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: code_dev_assistant_dev
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - dev_postgres_data:/var/lib/postgresql/data
+    networks:
+      - code-dev-network
+    profiles:
+      - development
+
+volumes:
+  dev_postgres_data:

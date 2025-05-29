@@ -99,7 +99,7 @@ def start_flask_app(web_ui_dir, host='127.0.0.1', port=5000, debug=False):
     
     try:
         # Import and start the Flask app
-        import app
+        from web_ui import app
         
         print(f"\n🚀 Starting Code Development Assistant Web UI...")
         print(f"🌐 Server: http://{host}:{port}")

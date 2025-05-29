@@ -224,14 +224,24 @@ async function loadRagStatus() {
         const data = await response.json();
         
         if (data.success) {
-            // Parse status for indexed files count
-            if (data.output.includes('documents')) {
-                const match = data.output.match(/(\d+)\s+documents/);
-                if (match) {
-                    document.getElementById('rag-status').textContent = `${match[1]} documents indexed`;
+            // Parse status for indexed files count - look for chunks instead of documents
+            if (data.output.includes('Total code chunks:')) {
+                const chunkMatch = data.output.match(/Total code chunks:\s*(\d+)/);
+                const fileMatch = data.output.match(/Unique files indexed:\s*(\d+)/);
+                
+                if (chunkMatch && fileMatch) {
+                    const chunks = chunkMatch[1];
+                    const files = fileMatch[1];
+                    if (parseInt(chunks) > 0) {
+                        document.getElementById('rag-status').textContent = `${files} files indexed (${chunks} chunks)`;
+                    } else {
+                        document.getElementById('rag-status').textContent = 'Not indexed';
+                    }
                 } else {
                     document.getElementById('rag-status').textContent = 'Index available';
                 }
+            } else if (data.output.includes('not properly initialized')) {
+                document.getElementById('rag-status').textContent = 'Not initialized';
             } else {
                 document.getElementById('rag-status').textContent = 'Not indexed';
             }
