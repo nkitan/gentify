@@ -3,7 +3,7 @@ Configuration management for the code development assistant.
 """
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List
 import json
 from dataclasses import dataclass, asdict
 from dotenv import load_dotenv
@@ -55,12 +55,82 @@ class CodeAnalysisConfig:
 
 
 @dataclass
+class CoderAgentConfig:
+    """Configuration for the coder agent."""
+    # AI Model settings
+    enable_auto_context: bool = True
+    max_context_tokens: int = 8000
+    temperature: float = 0.2
+    max_retries: int = 3
+    
+    # Safety settings
+    require_confirmation_for_destructive_ops: bool = True
+    auto_backup_before_changes: bool = True
+    sandbox_mode: bool = False
+    
+    # Workflow settings
+    enable_workflows: bool = True
+    auto_save_workflows: bool = True
+    max_parallel_steps: int = 3
+    default_timeout_seconds: int = 300
+    
+    # Code generation preferences
+    default_language: str = "python"
+    default_style: str = "clean"
+    include_type_hints: bool = True
+    include_docstrings: bool = True
+    
+    # Review settings
+    default_review_focus: Optional[List[str]] = None
+    enable_auto_suggestions: bool = True
+    security_scan_enabled: bool = True
+    
+    # File operation settings
+    auto_format_code: bool = True
+    create_backups: bool = True
+    backup_directory: str = ".agent_backups"
+    
+    def __post_init__(self):
+        if self.default_review_focus is None:
+            self.default_review_focus = ["security", "performance", "maintainability", "style"]
+
+
+@dataclass
+class WorkflowConfig:
+    """Configuration for workflow orchestration."""
+    enable_parallel_execution: bool = True
+    max_workflow_duration_minutes: int = 60
+    auto_save_progress: bool = True
+    enable_human_approval_steps: bool = False
+    notification_webhooks: Optional[List[str]] = None
+    
+    def __post_init__(self):
+        if self.notification_webhooks is None:
+            self.notification_webhooks = []
+
+
+@dataclass
+class AgentUIConfig:
+    """Configuration for agent user interface."""
+    enable_web_ui: bool = True
+    web_ui_port: int = 8080
+    enable_cli: bool = True
+    auto_open_browser: bool = False
+    theme: str = "light"  # light, dark, auto
+    enable_notifications: bool = True
+    show_progress_bars: bool = True
+
+
+@dataclass
 class AssistantConfig:
     """Main configuration for the code development assistant."""
     git: GitConfig
     rag: RAGConfig
     llm: LLMConfig
     code_analysis: CodeAnalysisConfig
+    coder_agent: CoderAgentConfig
+    workflow: WorkflowConfig
+    ui: AgentUIConfig
     workspace_path: Optional[str] = None
     log_level: str = "INFO"
     
@@ -76,6 +146,9 @@ class AssistantConfig:
                 rag=RAGConfig(**data.get('rag', {})),
                 llm=LLMConfig(**data.get('llm', {})),
                 code_analysis=CodeAnalysisConfig(**data.get('code_analysis', {})),
+                coder_agent=CoderAgentConfig(**data.get('coder_agent', {})),
+                workflow=WorkflowConfig(**data.get('workflow', {})),
+                ui=AgentUIConfig(**data.get('ui', {})),
                 workspace_path=data.get('workspace_path'),
                 log_level=data.get('log_level', 'INFO')
             )
@@ -90,7 +163,10 @@ class AssistantConfig:
             git=GitConfig(),
             rag=RAGConfig(),
             llm=LLMConfig(),
-            code_analysis=CodeAnalysisConfig()
+            code_analysis=CodeAnalysisConfig(),
+            coder_agent=CoderAgentConfig(),
+            workflow=WorkflowConfig(),
+            ui=AgentUIConfig()
         )
     
     def to_file(self, config_path: str):

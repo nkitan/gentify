@@ -13,12 +13,14 @@ from .git_tools import GitTools
 from .code_analyzer import CodeAnalyzer
 from .rag_system import CodeRAG
 from .llm_client import CodeLLM
+from .coder_agent import CoderAgent
 
 # Initialize components
 git_tools = GitTools()
 code_analyzer = CodeAnalyzer()
 rag_system = CodeRAG()
 llm_client = CodeLLM()
+coder_agent = CoderAgent(llm_client, rag_system, code_analyzer, git_tools)
 
 server = Server("code-dev-assistant")
 
@@ -300,6 +302,9 @@ async def handle_list_tools() -> list[types.Tool]:
     # Add LLM tools
     tools.extend(llm_client.get_llm_tools())
     
+    # Add Coder Agent tools
+    tools.extend(coder_agent.get_agent_tools())
+    
     return tools
 
 @server.call_tool()
@@ -334,6 +339,12 @@ async def handle_call_tool(
     llm_tool_names = [tool.name for tool in llm_client.get_llm_tools()]
     if name in llm_tool_names:
         result = await llm_client.execute_llm_tool(name, arguments)
+        return cast(list[types.TextContent | types.ImageContent | types.EmbeddedResource], result)
+    
+    # Route Coder Agent tools
+    agent_tool_names = [tool.name for tool in coder_agent.get_agent_tools()]
+    if name in agent_tool_names:
+        result = await coder_agent.execute_agent_tool(name, arguments)
         return cast(list[types.TextContent | types.ImageContent | types.EmbeddedResource], result)
     
     raise ValueError(f"Unknown tool: {name}")

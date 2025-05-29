@@ -205,25 +205,34 @@ class GitTools:
             )
         ]
     
-    async def execute_git_tool(self, name: str, arguments: Dict[str, Any]) -> List[types.TextContent]:
+    async def execute_git_tool(self, name: str, arguments: dict) -> List[types.TextContent]:
         """Execute a Git tool and return results."""
         try:
             if name == "git_status":
                 return await self._git_status()
             elif name == "git_add":
-                return await self._git_add(arguments["files"])
+                return await self._git_add(arguments.get("files", []))
             elif name == "git_commit":
+                message = arguments.get("message")
+                if not message:
+                    raise ValueError("Commit message is required")
                 return await self._git_commit(
-                    arguments["message"], 
+                    message,
                     arguments.get("add_all", False)
                 )
             elif name == "git_create_branch":
+                branch_name = arguments.get("branch_name")
+                if not branch_name:
+                    raise ValueError("Branch name is required")
                 return await self._git_create_branch(
-                    arguments["branch_name"],
+                    branch_name,
                     arguments.get("checkout", True)
                 )
             elif name == "git_checkout":
-                return await self._git_checkout(arguments["branch_name"])
+                branch_name = arguments.get("branch_name")
+                if not branch_name:
+                    raise ValueError("Branch name is required")
+                return await self._git_checkout(branch_name)
             elif name == "git_diff":
                 return await self._git_diff(
                     arguments.get("target", "HEAD"),
@@ -250,166 +259,185 @@ class GitTools:
             else:
                 raise ValueError(f"Unknown Git tool: {name}")
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Git operation failed: {str(e)}")]
-    
+            return [types.TextContent(type="text", text=f"Error executing {name}: {str(e)}")]
+
     async def _git_status(self) -> List[types.TextContent]:
-        """Get repository status."""
-        status_lines = []
-        
-        # Current branch
-        current_branch = self.repo.active_branch.name
-        status_lines.append(f"On branch {current_branch}")
-        
-        # Check if there are staged changes
-        if self.repo.index.diff("HEAD"):
-            status_lines.append("\nChanges to be committed:")
-            for item in self.repo.index.diff("HEAD"):
-                status_lines.append(f"  {item.change_type}: {item.a_path}")
-        
-        # Check for unstaged changes
-        if self.repo.index.diff(None):
-            status_lines.append("\nChanges not staged for commit:")
-            for item in self.repo.index.diff(None):
-                status_lines.append(f"  {item.change_type}: {item.a_path}")
-        
-        # Check for untracked files
-        untracked = self.repo.untracked_files
-        if untracked:
-            status_lines.append("\nUntracked files:")
-            for file in untracked:
-                status_lines.append(f"  {file}")
-        
-        if len(status_lines) == 1:  # Only branch info
-            status_lines.append("nothing to commit, working tree clean")
-        
-        return [types.TextContent(type="text", text="\n".join(status_lines))]
-    
+        """Get Git repository status."""
+        try:
+            repo = self.repo
+            status_info = {
+                "branch": repo.active_branch.name,
+                "ahead": repo.iter_commits('origin/HEAD..HEAD') if repo.remotes else 0,
+                "behind": repo.iter_commits('HEAD..origin/HEAD') if repo.remotes else 0,
+                "staged": list(repo.index.diff("HEAD")),
+                "unstaged": list(repo.index.diff(None)),
+                "untracked": repo.untracked_files
+            }
+            
+            result = f"Current branch: {status_info['branch']}\n"
+            result += f"Staged files: {len(status_info['staged'])}\n"
+            result += f"Unstaged files: {len(status_info['unstaged'])}\n"
+            result += f"Untracked files: {len(status_info['untracked'])}\n"
+            
+            if status_info['staged']:
+                result += "\nStaged changes:\n"
+                for item in status_info['staged']:
+                    result += f"  {item.change_type}: {item.a_path}\n"
+            
+            if status_info['unstaged']:
+                result += "\nUnstaged changes:\n"
+                for item in status_info['unstaged']:
+                    result += f"  {item.change_type}: {item.a_path}\n"
+            
+            if status_info['untracked']:
+                result += "\nUntracked files:\n"
+                for file in status_info['untracked']:
+                    result += f"  {file}\n"
+            
+            return [types.TextContent(type="text", text=result)]
+        except Exception as e:
+            return [types.TextContent(type="text", text=f"Error getting status: {str(e)}")]
+
     async def _git_add(self, files: List[str]) -> List[types.TextContent]:
         """Add files to staging area."""
         try:
-            for file_path in files:
-                if file_path == ".":
-                    self.repo.git.add(A=True)  # Add all files
+            repo = self.repo
+            for file_pattern in files:
+                if file_pattern == ".":
+                    repo.git.add(A=True)
                 else:
-                    self.repo.index.add([file_path])
+                    repo.index.add([file_pattern])
             
-            files_str = "all files" if "." in files else ", ".join(files)
-            return [types.TextContent(type="text", text=f"Added {files_str} to staging area")]
+            result = f"Added files: {', '.join(files)}"
+            return [types.TextContent(type="text", text=result)]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to add files: {str(e)}")]
-    
+            return [types.TextContent(type="text", text=f"Error adding files: {str(e)}")]
+
     async def _git_commit(self, message: str, add_all: bool = False) -> List[types.TextContent]:
-        """Commit changes."""
+        """Commit staged changes."""
         try:
+            repo = self.repo
             if add_all:
-                self.repo.git.add(A=True)
+                repo.git.add(A=True)
             
-            commit = self.repo.index.commit(message)
-            return [types.TextContent(
-                type="text", 
-                text=f"Committed changes with ID {commit.hexsha[:8]}: {message}"
-            )]
+            commit = repo.index.commit(message)
+            result = f"Committed: {commit.hexsha[:8]} - {message}"
+            return [types.TextContent(type="text", text=result)]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to commit: {str(e)}")]
-    
+            return [types.TextContent(type="text", text=f"Error committing: {str(e)}")]
+
     async def _git_create_branch(self, branch_name: str, checkout: bool = True) -> List[types.TextContent]:
         """Create a new branch."""
         try:
-            new_branch = self.repo.create_head(branch_name)
+            repo = self.repo
+            new_branch = repo.create_head(branch_name)
             if checkout:
                 new_branch.checkout()
-                return [types.TextContent(
-                    type="text", 
-                    text=f"Created and switched to branch '{branch_name}'"
-                )]
-            else:
-                return [types.TextContent(
-                    type="text", 
-                    text=f"Created branch '{branch_name}'"
-                )]
+            
+            result = f"Created branch '{branch_name}'"
+            if checkout:
+                result += " and checked out"
+            return [types.TextContent(type="text", text=result)]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to create branch: {str(e)}")]
-    
+            return [types.TextContent(type="text", text=f"Error creating branch: {str(e)}")]
+
     async def _git_checkout(self, branch_name: str) -> List[types.TextContent]:
-        """Switch to a branch."""
+        """Checkout a branch."""
         try:
-            self.repo.git.checkout(branch_name)
-            return [types.TextContent(type="text", text=f"Switched to branch '{branch_name}'")]
+            repo = self.repo
+            repo.git.checkout(branch_name)
+            result = f"Checked out branch '{branch_name}'"
+            return [types.TextContent(type="text", text=result)]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to checkout branch: {str(e)}")]
-    
+            return [types.TextContent(type="text", text=f"Error checking out branch: {str(e)}")]
+
     async def _git_diff(self, target: str = "HEAD", staged: bool = False) -> List[types.TextContent]:
-        """Show diff."""
+        """Show git diff."""
         try:
+            repo = self.repo
             if staged:
-                diff = self.repo.git.diff("--cached")
+                diff = repo.git.diff("--cached")
             else:
-                diff = self.repo.git.diff(target)
+                diff = repo.git.diff(target)
             
             if not diff:
-                return [types.TextContent(type="text", text="No differences found")]
-            
-            return [types.TextContent(type="text", text=diff)]
-        except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to get diff: {str(e)}")]
-    
-    async def _git_log(self, max_count: int = 10, oneline: bool = True) -> List[types.TextContent]:
-        """Show commit log."""
-        try:
-            if oneline:
-                log_output = self.repo.git.log("--oneline", f"-{max_count}")
+                result = "No differences found"
             else:
-                log_output = self.repo.git.log(f"-{max_count}")
+                result = f"Diff against {target}:\n{diff}"
             
-            return [types.TextContent(type="text", text=log_output)]
+            return [types.TextContent(type="text", text=result)]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to get log: {str(e)}")]
-    
-    async def _git_branch_list(self, include_remote: bool = True) -> List[types.TextContent]:
+            return [types.TextContent(type="text", text=f"Error getting diff: {str(e)}")]
+
+    async def _git_log(self, max_count: int = 10, oneline: bool = True) -> List[types.TextContent]:
+        """Show commit history."""
+        try:
+            repo = self.repo
+            commits = list(repo.iter_commits(max_count=max_count))
+            
+            result = f"Last {len(commits)} commits:\n"
+            for commit in commits:
+                if oneline:
+                    result += f"{commit.hexsha[:8]} - {commit.summary}\n"
+                else:
+                    result += f"Commit: {commit.hexsha}\n"
+                    result += f"Author: {commit.author}\n"
+                    result += f"Date: {commit.committed_datetime}\n"
+                    result += f"Message: {commit.message}\n\n"
+            
+            return [types.TextContent(type="text", text=result)]
+        except Exception as e:
+            return [types.TextContent(type="text", text=f"Error getting log: {str(e)}")]
+
+    async def _git_branch_list(self, remote: bool = True) -> List[types.TextContent]:
         """List branches."""
         try:
-            branches = []
+            repo = self.repo
+            result = "Branches:\n"
             
             # Local branches
-            for branch in self.repo.branches:
-                marker = "* " if branch == self.repo.active_branch else "  "
-                branches.append(f"{marker}{branch.name}")
+            result += "Local:\n"
+            for branch in repo.branches:
+                marker = " * " if branch == repo.active_branch else "   "
+                result += f"{marker}{branch.name}\n"
             
             # Remote branches
-            if include_remote:
-                branches.append("\nRemote branches:")
-                for ref in self.repo.remote().refs:
-                    branches.append(f"  {ref.name}")
+            if remote and repo.remotes:
+                result += "\nRemote:\n"
+                for remote_ref in repo.remotes.origin.refs:
+                    result += f"   {remote_ref.name}\n"
             
-            return [types.TextContent(type="text", text="\n".join(branches))]
+            return [types.TextContent(type="text", text=result)]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to list branches: {str(e)}")]
-    
-    async def _git_push(self, remote: str = "origin", branch: Optional[str] = None, force: bool = False) -> List[types.TextContent]:
-        """Push to remote."""
+            return [types.TextContent(type="text", text=f"Error listing branches: {str(e)}")]
+
+    async def _git_push(self, remote: str = "origin", branch: str = None, force: bool = False) -> List[types.TextContent]:
+        """Push to remote repository."""
         try:
-            if branch is None:
-                branch = self.repo.active_branch.name
+            repo = self.repo
+            if not branch:
+                branch = repo.active_branch.name
             
             if force:
-                self.repo.git.push(remote, branch, "--force")
-                return [types.TextContent(
-                    type="text", 
-                    text=f"Force pushed {branch} to {remote} (WARNING: This can overwrite remote history)"
-                )]
+                repo.git.push(remote, branch, force=True)
+                result = f"Force pushed {branch} to {remote}"
             else:
-                self.repo.git.push(remote, branch)
-                return [types.TextContent(type="text", text=f"Pushed {branch} to {remote}")]
-        except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to push: {str(e)}")]
-    
-    async def _git_pull(self, remote: str = "origin", branch: Optional[str] = None) -> List[types.TextContent]:
-        """Pull from remote."""
-        try:
-            if branch is None:
-                branch = self.repo.active_branch.name
+                repo.git.push(remote, branch)
+                result = f"Pushed {branch} to {remote}"
             
-            self.repo.git.pull(remote, branch)
-            return [types.TextContent(type="text", text=f"Pulled latest changes from {remote}/{branch}")]
+            return [types.TextContent(type="text", text=result)]
         except Exception as e:
-            return [types.TextContent(type="text", text=f"Failed to pull: {str(e)}")]
+            return [types.TextContent(type="text", text=f"Error pushing: {str(e)}")]
+
+    async def _git_pull(self, remote: str = "origin", branch: str = None) -> List[types.TextContent]:
+        """Pull from remote repository."""
+        try:
+            repo = self.repo
+            if not branch:
+                branch = repo.active_branch.name
+            
+            repo.git.pull(remote, branch)
+            result = f"Pulled {branch} from {remote}"
+            return [types.TextContent(type="text", text=result)]
+        except Exception as e:
+            return [types.TextContent(type="text", text=f"Error pulling: {str(e)}")]
