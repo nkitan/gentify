@@ -276,25 +276,26 @@ class CodeLLM:
     async def _call_ollama(self, prompt: str, system_prompt: Optional[str] = None) -> str:
         """Call Ollama API."""
         try:
-            messages = []
+            # Combine system prompt and user prompt for the generate endpoint
+            full_prompt = prompt
             if system_prompt:
-                messages.append({"role": "system", "content": system_prompt})
-            messages.append({"role": "user", "content": prompt})
+                full_prompt = f"{system_prompt}\n\n{prompt}"
             
             payload = {
                 "model": self.model,
-                "messages": messages,
+                "prompt": full_prompt,
                 "stream": False
             }
             
-            response = await self.client.post(
-                f"{self.base_url}/api/chat",
-                json=payload
-            )
-            response.raise_for_status()
-            
-            result = response.json()
-            return result["message"]["content"]
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    f"{self.base_url}/api/generate",
+                    json=payload
+                )
+                response.raise_for_status()
+                
+                result = response.json()
+                return result.get("response", "")
             
         except httpx.ConnectError:
             raise RuntimeError(f"Cannot connect to Ollama at {self.base_url}. Make sure Ollama is running.")
@@ -443,12 +444,24 @@ Please provide:
     
     async def _chat_about_code(self, question: str, code_context: Optional[str]) -> List[types.TextContent]:
         """Have a conversation about code."""
-        system_prompt = "You are a helpful coding assistant with deep knowledge of programming concepts and best practices."
+        system_prompt = """You are a helpful coding assistant with deep knowledge of programming concepts and best practices. 
+        When users ask general questions about how code works or what a project does, provide comprehensive, easy-to-understand explanations 
+        that give them a good overview of the system's functionality, architecture, and purpose. Focus on clarity and practical understanding."""
         
         prompt = f"Question: {question}"
         
         if code_context:
             prompt += f"\n\nRelevant code context:\n{code_context}"
+            
+            # Check if this looks like a project overview question
+            overview_keywords = ["how this works", "what does this do", "explain this code", "how does this project", "what is this"]
+            if any(keyword in question.lower() for keyword in overview_keywords):
+                prompt += "\n\nThis appears to be a question asking for a general explanation of how the code/project works. Please provide:"
+                prompt += "\n1. A high-level overview of what the system does"
+                prompt += "\n2. Key components and their roles"
+                prompt += "\n3. How the pieces work together"
+                prompt += "\n4. The main functionality and purpose"
+                prompt += "\nMake your explanation comprehensive but accessible, avoiding overly technical details unless specifically asked."
         
         prompt += "\n\nPlease provide a helpful, detailed response."
         

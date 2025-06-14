@@ -72,6 +72,94 @@
         </div>
     </div>
 
+    <!-- Setup Guide (shown when no workspace is selected) -->
+    <div id="setup-guide" class="bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200" style="display: none;">
+        <div class="p-6">
+            <div class="flex items-start">
+                <div class="p-3 rounded-full bg-indigo-100 text-indigo-600 flex-shrink-0">
+                    <i class="fas fa-rocket text-xl"></i>
+                </div>
+                <div class="ml-4 flex-1">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Get Started with AI-Powered Development</h3>
+                    <p class="text-gray-700 mb-4">To unlock all AI features, select a codebase directory. This enables intelligent code assistance across your entire project.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                            <h4 class="font-semibold text-gray-900 mb-2">
+                                <i class="fas fa-folder-open text-indigo-600 mr-2"></i>Step 1: Select Codebase
+                            </h4>
+                            <p class="text-sm text-gray-600">Choose your project directory to give the AI context about your code structure, dependencies, and Git history.</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                            <h4 class="font-semibold text-gray-900 mb-2">
+                                <i class="fas fa-brain text-indigo-600 mr-2"></i>Step 2: AI Analysis
+                            </h4>
+                            <p class="text-sm text-gray-600">The system will automatically index your code, analyze patterns, and prepare intelligent search capabilities.</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                            <h4 class="font-semibold text-gray-900 mb-2">
+                                <i class="fas fa-comments text-indigo-600 mr-2"></i>Step 3: Start Coding
+                            </h4>
+                            <p class="text-sm text-gray-600">Chat with AI about your code, generate new features, debug issues, and get intelligent suggestions.</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                            <h4 class="font-semibold text-gray-900 mb-2">
+                                <i class="fas fa-git-alt text-indigo-600 mr-2"></i>Step 4: Git Integration
+                            </h4>
+                            <p class="text-sm text-gray-600">Manage branches, commits, and review changes with AI assistance understanding your project's history.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-600">
+                            <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
+                            <strong>Tip:</strong> Works best with Git repositories and structured projects
+                        </div>
+                        <button onclick="openCodebaseSelector()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors">
+                            <i class="fas fa-folder-open mr-2"></i>Select Codebase Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Codebase Selection -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-semibold text-gray-900">Active Codebase</h2>
+                <button onclick="openCodebaseSelector()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i class="fas fa-folder-open mr-2"></i>Change Codebase
+                </button>
+            </div>
+        </div>
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-gray-100 text-gray-600">
+                    <i class="fas fa-folder-open text-xl"></i>
+                </div>
+                <div class="ml-4 flex-1">
+                    <h3 class="text-lg font-medium text-gray-900" id="current-codebase-name">Loading...</h3>
+                    <p class="text-gray-600 text-sm" id="current-codebase-path">Loading current codebase...</p>
+                    <div class="mt-2">
+                        <span class="inline-block px-2 py-1 text-xs font-medium rounded-full" id="codebase-status">
+                            <i class="fas fa-circle text-xs mr-1"></i>Loading...
+                        </span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <button onclick="reinitializeCodebase()" class="text-blue-600 hover:text-blue-800 text-sm" id="reinitialize-btn" style="display: none;">
+                        <i class="fas fa-refresh mr-1"></i>Reinitialize
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Quick Actions -->
     <div class="bg-white rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -190,15 +278,431 @@
         </div>
     </div>
 </div>
+
+<!-- Codebase Selector Modal -->
+<div id="codebaseSelectorModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Select Codebase</h3>
+                <button onclick="closeCodebaseSelector()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="p-6 overflow-y-auto max-h-[calc(90vh-8rem)]">
+            <!-- Current Path -->
+            <div class="mb-4">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                    <i class="fas fa-folder text-blue-500"></i>
+                    <span>Current path:</span>
+                    <span id="currentPath" class="font-mono bg-gray-100 px-2 py-1 rounded">/</span>
+                </div>
+            </div>
+
+            <!-- Path Navigation -->
+            <div class="mb-4">
+                <div class="flex items-center space-x-2">
+                    <button onclick="navigateToParent()" id="parentButton" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm" disabled>
+                        <i class="fas fa-arrow-up mr-1"></i>Parent Directory
+                    </button>
+                    <button onclick="navigateToHome()" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm">
+                        <i class="fas fa-home mr-1"></i>Home
+                    </button>
+                    <button onclick="refreshDirectoryListing()" class="px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded text-sm">
+                        <i class="fas fa-refresh mr-1"></i>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Directory Listing -->
+            <div class="border rounded-lg">
+                <div class="bg-gray-50 px-4 py-2 border-b text-sm font-medium text-gray-700">
+                    Select a directory to use as your codebase
+                </div>
+                <div id="directoryListing" class="divide-y max-h-96 overflow-y-auto">
+                    <!-- Directory contents will be loaded here -->
+                    <div class="p-4 text-center text-gray-500">
+                        <i class="fas fa-spinner fa-spin mr-2"></i>Loading directories...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-gray-200 flex justify-between">
+            <div class="flex items-center">
+                <button onclick="selectCurrentDirectory()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    <i class="fas fa-check mr-2"></i>Select Current Directory
+                </button>
+            </div>
+            <button onclick="closeCodebaseSelector()" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
+// Global variables for codebase selector
+let currentBrowsePath = '';
+
 // Load status information on page load
 document.addEventListener('DOMContentLoaded', async function() {
+    // Check initialization status first
+    await checkInitializationStatus();
     await loadGitStatus();
     await loadRagStatus();
+    await loadCurrentCodebase();
 });
+
+async function checkInitializationStatus() {
+    try {
+        const response = await fetch('/api/initialization_status');
+        const data = await response.json();
+        
+        if (data.success && data.needs_setup) {
+            // Show a welcome message and automatically open codebase selector
+            setTimeout(() => {
+                showWelcomeAndOpenSelector(data.message);
+            }, 1000); // Small delay to let the page load
+        }
+    } catch (error) {
+        console.error('Error checking initialization status:', error);
+    }
+}
+
+function showWelcomeAndOpenSelector(message) {
+    // Create a welcome modal or notification
+    const welcomeModal = document.createElement('div');
+    welcomeModal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50';
+    welcomeModal.innerHTML = `
+        <div class="bg-white rounded-lg shadow-xl max-w-md mx-4">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600 mr-4">
+                        <i class="fas fa-rocket text-2xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900">Welcome to Code Development Assistant!</h3>
+                        <p class="text-gray-600">${message}</p>
+                    </div>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                    <p class="text-sm text-blue-800">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        To get started, please select a codebase directory. This will enable all AI features including:
+                    </p>
+                    <ul class="text-sm text-blue-700 mt-2 ml-4">
+                        <li>• Git operations and branch management</li>
+                        <li>• Intelligent code search with RAG</li>
+                        <li>• AI-powered chat about your code</li>
+                        <li>• Code generation and analysis</li>
+                    </ul>
+                </div>
+                <div class="flex justify-end space-x-3">
+                    <button onclick="closeWelcomeModal()" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Skip for now
+                    </button>
+                    <button onclick="closeWelcomeModal(); openCodebaseSelector()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-folder-open mr-2"></i>Select Codebase
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(welcomeModal);
+    window.welcomeModal = welcomeModal;
+}
+
+function closeWelcomeModal() {
+    if (window.welcomeModal) {
+        document.body.removeChild(window.welcomeModal);
+        window.welcomeModal = null;
+    }
+}
+
+async function loadCurrentCodebase() {
+    try {
+        const response = await fetch('/api/current_codebase');
+        const data = await response.json();
+        
+        if (data.success) {
+            const codebaseName = document.getElementById('current-codebase-name');
+            const codebasePath = document.getElementById('current-codebase-path');
+            const codebaseStatus = document.getElementById('codebase-status');
+            const reinitializeBtn = document.getElementById('reinitialize-btn');
+            const setupGuide = document.getElementById('setup-guide');
+            
+            if (data.workspace_path) {
+                const pathParts = data.workspace_path.split('/');
+                const name = pathParts[pathParts.length - 1] || 'Root';
+                
+                codebaseName.textContent = name;
+                codebasePath.textContent = data.workspace_path;
+                
+                // Hide setup guide when workspace is selected
+                setupGuide.style.display = 'none';
+                
+                if (data.is_initialized) {
+                    codebaseStatus.innerHTML = '<i class="fas fa-circle text-xs mr-1 text-green-500"></i>Ready';
+                    codebaseStatus.className = 'inline-block px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-700';
+                } else {
+                    codebaseStatus.innerHTML = '<i class="fas fa-circle text-xs mr-1 text-yellow-500"></i>Initializing...';
+                    codebaseStatus.className = 'inline-block px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-700';
+                    reinitializeBtn.style.display = 'block';
+                }
+            } else {
+                codebaseName.textContent = 'No codebase selected';
+                codebasePath.innerHTML = 'Click <strong>"Change Codebase"</strong> to select a directory and unlock all AI features';
+                codebaseStatus.innerHTML = '<i class="fas fa-circle text-xs mr-1 text-red-500"></i>Setup Required';
+                codebaseStatus.className = 'inline-block px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-700';
+                
+                // Show setup guide when no workspace is selected
+                setupGuide.style.display = 'block';
+            }
+        }
+    } catch (error) {
+        console.error('Error loading current codebase:', error);
+        document.getElementById('current-codebase-name').textContent = 'Error loading status';
+        document.getElementById('current-codebase-path').textContent = 'Please refresh the page';
+    }
+}
+
+async function openCodebaseSelector() {
+    const modal = document.getElementById('codebaseSelectorModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    
+    // Start browsing from home directory
+    await navigateToHome();
+}
+
+function closeCodebaseSelector() {
+    const modal = document.getElementById('codebaseSelectorModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+
+async function navigateToHome() {
+    await browseDirectory('~');
+}
+
+async function navigateToParent() {
+    if (currentBrowsePath) {
+        const parentPath = currentBrowsePath.split('/').slice(0, -1).join('/') || '/';
+        await browseDirectory(parentPath);
+    }
+}
+
+async function refreshDirectoryListing() {
+    if (currentBrowsePath) {
+        await browseDirectory(currentBrowsePath);
+    }
+}
+
+async function browseDirectory(path) {
+    const directoryListing = document.getElementById('directoryListing');
+    const currentPathElement = document.getElementById('currentPath');
+    const parentButton = document.getElementById('parentButton');
+    
+    // Show loading
+    directoryListing.innerHTML = '<div class="p-4 text-center text-gray-500"><i class="fas fa-spinner fa-spin mr-2"></i>Loading directories...</div>';
+    
+    try {
+        const response = await fetch('/api/browse_directories', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: path })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentBrowsePath = data.current_path;
+            currentPathElement.textContent = data.current_path;
+            
+            // Enable/disable parent button
+            parentButton.disabled = !data.parent_path;
+            
+            // Build directory listing
+            let html = '';
+            
+            // Add directories
+            data.directories.forEach(dir => {
+                const isProject = dir.is_project;
+                html += `
+                    <div class="flex items-center p-3 hover:bg-gray-50 cursor-pointer" onclick="browseDirectory('${dir.path}')">
+                        <div class="flex-shrink-0 mr-3">
+                            <i class="fas fa-folder text-blue-500"></i>
+                            ${isProject ? '<i class="fas fa-code text-green-500 ml-1" title="Code project"></i>' : ''}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-sm font-medium text-gray-900">${dir.name}</div>
+                            ${isProject ? '<div class="text-xs text-green-600">Code project detected</div>' : ''}
+                        </div>
+                        <div class="flex-shrink-0">
+                            <button onclick="event.stopPropagation(); selectDirectory('${dir.path}')" 
+                                    class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                                Select
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Add important files for reference
+            if (data.files.length > 0) {
+                html += '<div class="px-3 py-2 bg-gray-50 text-xs font-medium text-gray-500 border-t">Important files in this directory:</div>';
+                data.files.forEach(file => {
+                    html += `
+                        <div class="flex items-center p-2 px-3">
+                            <i class="fas fa-file text-gray-400 mr-3"></i>
+                            <span class="text-sm text-gray-600">${file.name}</span>
+                        </div>
+                    `;
+                });
+            }
+            
+            directoryListing.innerHTML = html || '<div class="p-4 text-center text-gray-500">No directories found</div>';
+        } else {
+            directoryListing.innerHTML = `<div class="p-4 text-center text-red-500">Error: ${data.error}</div>`;
+        }
+    } catch (error) {
+        directoryListing.innerHTML = `<div class="p-4 text-center text-red-500">Error loading directories: ${error.message}</div>`;
+    }
+}
+
+async function selectCurrentDirectory() {
+    if (currentBrowsePath) {
+        await selectDirectory(currentBrowsePath);
+    }
+}
+
+async function selectDirectory(path) {
+    try {
+        // Show loading state
+        const modal = document.getElementById('codebaseSelectorModal');
+        const originalContent = modal.innerHTML;
+        modal.innerHTML = `
+            <div class="bg-white rounded-lg shadow-xl max-w-2xl mx-4 p-8 text-center">
+                <div class="mb-4">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Initializing Codebase</h3>
+                <p class="text-gray-600">Setting up ${path}...</p>
+                <p class="text-sm text-gray-500 mt-2">This may take a moment as we index your code and initialize all components.</p>
+            </div>
+        `;
+        
+        const response = await fetch('/api/select_codebase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ workspace_path: path })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success message
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl mx-4 p-8 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-check-circle text-4xl text-green-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Codebase Initialized Successfully!</h3>
+                    <p class="text-gray-600">${data.message}</p>
+                    <div class="mt-6">
+                        <button onclick="closeCodebaseSelector()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg">
+                            <i class="fas fa-arrow-right mr-2"></i>Continue
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Auto-close after 2 seconds and reload status
+            setTimeout(async () => {
+                closeCodebaseSelector();
+                await loadCurrentCodebase();
+                await loadGitStatus();
+                await loadRagStatus();
+                
+                // Show a success notification
+                showNotification('Codebase initialized successfully! All AI features are now available.', 'success');
+            }, 2000);
+            
+        } else {
+            // Show error message
+            modal.innerHTML = `
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl mx-4 p-8 text-center">
+                    <div class="mb-4">
+                        <i class="fas fa-exclamation-triangle text-4xl text-red-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Initialization Failed</h3>
+                    <p class="text-gray-600">${data.error}</p>
+                    <div class="mt-6 space-x-3">
+                        <button onclick="location.reload()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            Retry
+                        </button>
+                        <button onclick="closeCodebaseSelector()" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Error selecting codebase:', error);
+        showNotification('Error selecting codebase: ' + error.message, 'error');
+        closeCodebaseSelector();
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 max-w-sm p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-100 text-green-800 border border-green-200' :
+        type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' :
+        'bg-blue-100 text-blue-800 border border-blue-200'
+    }`;
+    
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <i class="fas ${
+                type === 'success' ? 'fa-check-circle' :
+                type === 'error' ? 'fa-exclamation-triangle' :
+                'fa-info-circle'
+            } mr-2"></i>
+            <span class="text-sm">${message}</span>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-2 text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+async function reinitializeCodebase() {
+    const response = await fetch('/api/current_codebase');
+    const data = await response.json();
+    
+    if (data.success && data.workspace_path) {
+        if (confirm('Reinitialize the current codebase? This will re-index the code and update all components.')) {
+            await selectDirectory(data.workspace_path);
+        }
+    }
+}
 
 async function loadGitStatus() {
     try {
@@ -292,10 +796,16 @@ function closeBranchModal() {
     modal.classList.remove('flex');
 }
 
-// Close modal when clicking outside
+// Close modals when clicking outside
 document.getElementById('branchModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeBranchModal();
+    }
+});
+
+document.getElementById('codebaseSelectorModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeCodebaseSelector();
     }
 });
 </script>

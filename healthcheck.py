@@ -49,7 +49,7 @@ def check_mcp_server():
 def check_database():
     """Check if the RAG database is accessible."""
     try:
-        db_path = Path("./code_rag_db")
+        db_path = Path("./databases/rag/default")
         if db_path.exists():
             print("✅ RAG database directory exists")
             return True

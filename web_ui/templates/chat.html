@@ -6,13 +6,19 @@
 <div class="space-y-6">
     <!-- Header -->
     <div class="bg-white rounded-lg shadow p-6">
-        <div class="flex items-center">
-            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
-                <i class="fas fa-comments text-2xl"></i>
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i class="fas fa-comments text-2xl"></i>
+                </div>
+                <div class="ml-4">
+                    <h1 class="text-2xl font-bold text-gray-900">AI Coder Agent Chat</h1>
+                    <p class="text-gray-600">Intelligent coding assistant with full project understanding and capabilities</p>
+                </div>
             </div>
-            <div class="ml-4">
-                <h1 class="text-2xl font-bold text-gray-900">AI Code Assistant Chat</h1>
-                <p class="text-gray-600">Have a conversation about your code, ask questions, and get instant help</p>
+            <div class="text-right">
+                <div class="text-sm text-gray-500">Current Workspace:</div>
+                <div class="text-sm font-medium text-gray-900" id="chat-workspace-status">Loading...</div>
             </div>
         </div>
     </div>
@@ -21,7 +27,33 @@
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <!-- Chat History -->
         <div class="lg:col-span-3">
-            <div class="bg-white rounded-lg shadow">
+                    <div class="bg-white rounded-lg shadow">
+                <!-- Chat Controls -->
+                <div class="border-b px-6 py-4">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-lg font-semibold text-gray-900">Conversation</h2>
+                        <div class="flex items-center space-x-3">
+                            <!-- Auto Context Toggle -->
+                            <label class="flex items-center">
+                                <input type="checkbox" id="auto-context-toggle" checked class="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                                <span class="ml-2 text-sm text-gray-600">Auto Context</span>
+                            </label>
+                            <!-- MCP Tools Indicator -->
+                            <div id="mcp-status" class="flex items-center">
+                                <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                                <span class="text-xs text-gray-600">MCP Active</span>
+                            </div>
+                            <!-- Clear Chat Button -->
+                            <button onclick="clearChat()" class="text-sm text-gray-500 hover:text-gray-700">
+                                <i class="fas fa-trash mr-1"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Context Summary -->
+                    <div id="context-summary" class="mt-2 text-xs text-gray-500 hidden">
+                        Context: Loading...
+                    </div>
+                </div>
                 <!-- Chat Messages -->
                 <div id="chat-messages" class="h-96 overflow-y-auto p-6 space-y-4 border-b">
                     <!-- Welcome Message -->
@@ -34,18 +66,22 @@
                         <div class="flex-1">
                             <div class="bg-blue-50 rounded-lg p-3">
                                 <p class="text-sm text-gray-900">
-                                    Hello! I'm your AI code assistant. I can help you with:
+                                    Hello! I'm your intelligent AI coder agent with <strong>enhanced MCP integration</strong> and <strong>automatic context collection</strong>. I can help you with:
                                 </p>
                                 <ul class="mt-2 text-sm text-gray-700 list-disc list-inside space-y-1">
-                                    <li>Explaining complex code</li>
-                                    <li>Debugging issues</li>
-                                    <li>Code reviews and suggestions</li>
-                                    <li>Best practices and patterns</li>
-                                    <li>Architecture decisions</li>
+                                    <li><strong>🔄 Auto Context:</strong> I automatically understand your entire codebase, git status, and project structure</li>
+                                    <li><strong>🧠 Smart Code Analysis:</strong> Generate, review, and refactor with full project awareness</li>
+                                    <li><strong>📊 Git Intelligence:</strong> Advanced Git operations with change analysis and branch management</li>
+                                    <li><strong>🔍 RAG-Powered Search:</strong> Find relevant code snippets instantly using semantic search</li>
+                                    <li><strong>🏗️ Project Understanding:</strong> Analyze structure, dependencies, and suggest improvements</li>
+                                    <li><strong>🛠️ MCP Tools:</strong> File operations, code analysis, and workflow automation</li>
                                 </ul>
-                                <p class="mt-2 text-sm text-gray-600">
-                                    Feel free to ask me anything about your code!
-                                </p>
+                                <div class="mt-3 p-2 bg-blue-100 rounded border-l-4 border-blue-400">
+                                    <p class="text-xs text-blue-800">
+                                        <i class="fas fa-magic mr-1"></i><strong>Auto-Context Enabled:</strong> I gather workspace info, git status, and relevant code for every conversation automatically!
+                                        <strong>Auto Context is enabled</strong> - I automatically gather relevant project information for every conversation!
+                                    </p>
+                                </div>
                             </div>
                             <div class="text-xs text-gray-500 mt-1">AI Assistant • just now</div>
                         </div>
@@ -96,6 +132,13 @@
                         </div>
                     </button>
                     
+                    <button onclick="insertTemplate('generate')" class="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center">
+                            <i class="fas fa-code text-green-600 mr-2"></i>
+                            <span class="text-sm font-medium">Generate Code</span>
+                        </div>
+                    </button>
+                    
                     <button onclick="insertTemplate('debug')" class="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                         <div class="flex items-center">
                             <i class="fas fa-bug text-red-600 mr-2"></i>
@@ -110,12 +153,72 @@
                         </div>
                     </button>
                     
-                    <button onclick="insertTemplate('optimize')" class="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                    <button onclick="insertTemplate('refactor')" class="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                         <div class="flex items-center">
-                            <i class="fas fa-tachometer-alt text-green-600 mr-2"></i>
-                            <span class="text-sm font-medium">Optimize Performance</span>
+                            <i class="fas fa-tools text-purple-600 mr-2"></i>
+                            <span class="text-sm font-medium">Refactor Code</span>
                         </div>
                     </button>
+                    
+                    <button onclick="insertTemplate('test')" class="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center">
+                            <i class="fas fa-vial text-indigo-600 mr-2"></i>
+                            <span class="text-sm font-medium">Generate Tests</span>
+                        </div>
+                    </button>
+                    
+                    <button onclick="insertTemplate('git')" class="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center">
+                            <i class="fas fa-code-branch text-orange-600 mr-2"></i>
+                            <span class="text-sm font-medium">Git Operations</span>
+                        </div>
+                    </button>
+                    
+                    <button onclick="insertTemplate('analyze')" class="w-full text-left p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                        <div class="flex items-center">
+                            <i class="fas fa-chart-line text-teal-600 mr-2"></i>
+                            <span class="text-sm font-medium">Analyze Project</span>
+                        </div>
+                    </button>
+                    
+                    <!-- Enhanced MCP Actions -->
+                    <div class="border-t border-gray-200 pt-3 mt-3">
+                        <div class="text-xs font-medium text-gray-500 mb-2">🛠️ MCP Enhanced Actions</div>
+                        
+                        <button onclick="insertTemplate('context')" class="w-full text-left p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors mb-2">
+                            <div class="flex items-center">
+                                <i class="fas fa-brain text-blue-600 mr-2"></i>
+                                <span class="text-sm font-medium">Show Auto Context</span>
+                            </div>
+                        </button>
+                        
+                        <button onclick="insertTemplate('rag_search')" class="w-full text-left p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors mb-2">
+                            <div class="flex items-center">
+                                <i class="fas fa-search-plus text-purple-600 mr-2"></i>
+                                <span class="text-sm font-medium">RAG Code Search</span>
+                            </div>
+                        </button>
+                        
+                        <button onclick="insertTemplate('git_analysis')" class="w-full text-left p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                            <div class="flex items-center">
+                                <i class="fas fa-code-branch text-green-600 mr-2"></i>
+                                <span class="text-sm font-medium">Git Analysis</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- MCP Tools Status -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-sm font-medium text-gray-700">MCP Tools Available</span>
+                        <button onclick="refreshMCPStatus()" class="text-xs text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-sync-alt mr-1"></i>Refresh
+                        </button>
+                    </div>
+                    <div id="mcp-tools-summary" class="text-xs text-gray-600">
+                        Loading MCP capabilities...
+                    </div>
                 </div>
             </div>
 
@@ -134,15 +237,41 @@
                 </div>
             </div>
 
-            <!-- Tips -->
+            <!-- Enhanced Tips -->
             <div class="bg-blue-50 rounded-lg p-4">
-                <h4 class="text-sm font-semibold text-blue-900 mb-2">💡 Tips</h4>
+                <h4 class="text-sm font-semibold text-blue-900 mb-2">💡 Enhanced Features</h4>
                 <ul class="text-xs text-blue-800 space-y-1">
-                    <li>• Include code context for better answers</li>
-                    <li>• Be specific about your issues</li>
-                    <li>• Ask about best practices</li>
-                    <li>• Request code examples</li>
+                    <li>• <strong>Auto Context:</strong> I automatically understand your project structure</li>
+                    <li>• <strong>Smart Search:</strong> RAG finds relevant code for every question</li>
+                    <li>• <strong>Git Aware:</strong> I see your current branch and recent changes</li>
+                    <li>• <strong>MCP Integration:</strong> Advanced tool capabilities for complex tasks</li>
+                    <li>• <strong>Project Analysis:</strong> Deep understanding of dependencies and structure</li>
+                    <li>• Toggle Auto Context off for faster responses when not needed</li>
                 </ul>
+            </div>
+
+            <!-- Agent Status -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Agent Status</h3>
+                <div id="agent-status" class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Status</span>
+                        <span id="agent-status-indicator" class="text-sm font-medium text-yellow-600">
+                            <i class="fas fa-spinner fa-spin mr-1"></i>Checking...
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Project Context</span>
+                        <span id="project-context-status" class="text-sm font-medium text-gray-500">Unknown</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Capabilities</span>
+                        <span id="capabilities-count" class="text-sm font-medium text-gray-500">-</span>
+                    </div>
+                </div>
+                <button onclick="refreshAgentStatus()" class="mt-3 w-full text-xs text-blue-600 hover:text-blue-800">
+                    <i class="fas fa-refresh mr-1"></i>Refresh Status
+                </button>
             </div>
         </div>
     </div>
@@ -174,13 +303,14 @@ function updateSessionInfo() {
 // Update every minute
 setInterval(updateSessionInfo, 60000);
 
-// Chat form submission
+// Chat form submission with enhanced context
 document.getElementById('chat-form').addEventListener('submit', async function(e) {
     e.preventDefault();
     
     const formData = new FormData(e.target);
     const question = formData.get('question');
     const context = formData.get('context');
+    const autoContext = document.getElementById('auto-context-toggle').checked;
     
     if (!question.trim()) return;
     
@@ -193,13 +323,31 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
     // Show typing indicator
     const typingId = addTypingIndicator();
     
+    // Update context summary if auto context is enabled
+    if (autoContext) {
+        try {
+            const contextResponse = await fetch('/api/chat/context/auto', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ question: question })
+            });
+            const contextData = await contextResponse.json();
+            if (contextData.success) {
+                updateContextSummary(contextData.summary);
+            }
+        } catch (e) {
+            console.warn('Could not get auto context preview:', e);
+        }
+    }
+    
     try {
         const response = await fetch('/api/chat', {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
                 question: question,
-                context: context
+                context: context,
+                auto_context: autoContext
             })
         });
         
@@ -210,6 +358,9 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
         
         if (result.success) {
             addMessage('assistant', result.output);
+            if (result.context_used) {
+                updateContextSummary(result.context_used);
+            }
             showNotification('Response received!', 'success');
         } else {
             addMessage('assistant', 'Sorry, I encountered an error: ' + result.error);
@@ -334,9 +485,17 @@ function insertTemplate(type) {
     
     const templates = {
         explain: "Can you explain how this code works and what it does?",
+        generate: "Generate a Python function that [describe what you want the function to do]",
         debug: "I'm having an issue with this code. It's not working as expected. Can you help me debug it?",
         review: "Can you review this code and suggest improvements for best practices, performance, and maintainability?",
-        optimize: "How can I optimize this code for better performance?"
+        refactor: "How can I refactor this code to make it cleaner, more efficient, and easier to maintain?",
+        test: "Generate comprehensive unit tests for this code using pytest",
+        git: "Show me the current Git status and suggest what I should do next",
+        analyze: "Analyze the structure and dependencies of this project and provide insights",
+        // Enhanced MCP Templates
+        context: "Show me the automatic context you've gathered about this project, including workspace info, git status, and relevant code",
+        rag_search: "Search the codebase for [describe what you're looking for] and explain how it works",
+        git_analysis: "Perform a comprehensive Git analysis including branch status, recent commits, and suggest next actions based on current changes"
     };
     
     textarea.value = templates[type] || '';
@@ -348,6 +507,263 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Format output for better display
+function formatOutput(text) {
+    if (!text) return '';
+    
+    // Convert markdown-style formatting to HTML
+    let formatted = text
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')              // Italic
+        .replace(/`(.*?)`/g, '<code class="bg-gray-100 px-1 rounded">$1</code>')  // Inline code
+        .replace(/^• (.+)$/gm, '<li>$1</li>')              // List items
+        .replace(/^→ (.+)$/gm, '<li class="text-blue-600">→ $1</li>')  // Action items
+        .replace(/\n\n/g, '</p><p class="mt-2">')          // Paragraphs
+        .replace(/\n/g, '<br>');                           // Line breaks
+    
+    // Wrap list items in ul tags
+    formatted = formatted.replace(/(<li>.*?<\/li>)/gs, '<ul class="list-disc list-inside mt-2 space-y-1">$1</ul>');
+    
+    // Wrap in paragraph tags if not already wrapped
+    if (!formatted.startsWith('<') && formatted.trim()) {
+        formatted = '<p>' + formatted + '</p>';
+    }
+    
+    // Handle code blocks (triple backticks)
+    formatted = formatted.replace(/```(\w+)?\n([\s\S]*?)```/g, function(match, lang, code) {
+        return `<pre class="bg-gray-900 text-green-400 p-3 rounded mt-2 overflow-x-auto"><code>${escapeHtml(code.trim())}</code></pre>`;
+    });
+    
+    return formatted;
+}
+
+// Agent status functions
+async function checkAgentStatus() {
+    try {
+        const response = await fetch('/api/agent/status');
+        const result = await response.json();
+        
+        if (result.success && result.status) {
+            const status = result.status;
+            
+            // Update status indicator
+            const statusIndicator = document.getElementById('agent-status-indicator');
+            if (status.agent_active) {
+                statusIndicator.innerHTML = '<i class="fas fa-check-circle text-green-600 mr-1"></i>Active';
+                statusIndicator.className = 'text-sm font-medium text-green-600';
+            } else {
+                statusIndicator.innerHTML = '<i class="fas fa-exclamation-circle text-red-600 mr-1"></i>Inactive';
+                statusIndicator.className = 'text-sm font-medium text-red-600';
+            }
+            
+            // Update project context status
+            const contextStatus = document.getElementById('project-context-status');
+            if (status.project_context) {
+                contextStatus.textContent = 'Loaded';
+                contextStatus.className = 'text-sm font-medium text-green-600';
+            } else {
+                contextStatus.textContent = 'Not loaded';
+                contextStatus.className = 'text-sm font-medium text-yellow-600';
+            }
+            
+            // Update capabilities count
+            const capabilitiesCount = document.getElementById('capabilities-count');
+            if (status.available_capabilities) {
+                capabilitiesCount.textContent = status.available_capabilities.length;
+                capabilitiesCount.className = 'text-sm font-medium text-blue-600';
+            }
+        } else {
+            // Error state
+            const statusIndicator = document.getElementById('agent-status-indicator');
+            statusIndicator.innerHTML = '<i class="fas fa-times-circle text-red-600 mr-1"></i>Error';
+            statusIndicator.className = 'text-sm font-medium text-red-600';
+        }
+    } catch (error) {
+        console.error('Failed to check agent status:', error);
+        const statusIndicator = document.getElementById('agent-status-indicator');
+        statusIndicator.innerHTML = '<i class="fas fa-times-circle text-red-600 mr-1"></i>Unavailable';
+        statusIndicator.className = 'text-sm font-medium text-red-600';
+    }
+}
+
+function refreshAgentStatus() {
+    checkAgentStatus();
+}
+
+// Notification system
+function showNotification(message, type = 'info') {
+    // Remove existing notification if any
+    const existing = document.getElementById('notification');
+    if (existing) {
+        existing.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.id = 'notification';
+    notification.className = `fixed top-4 right-4 px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300`;
+    
+    const colors = {
+        success: 'bg-green-500 text-white',
+        error: 'bg-red-500 text-white',
+        warning: 'bg-yellow-500 text-white',
+        info: 'bg-blue-500 text-white'
+    };
+    
+    notification.className += ` ${colors[type] || colors.info}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+        if (notification) {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 3000);
+}
+
+// Check agent status on page load and periodically
+document.addEventListener('DOMContentLoaded', function() {
+    checkAgentStatus();
+    checkWorkspaceStatus();
+    loadMCPStatus();
+    // Check status every 2 minutes
+    setInterval(checkAgentStatus, 120000);
+});
+
+async function checkWorkspaceStatus() {
+    try {
+        const response = await fetch('/api/current_codebase');
+        const data = await response.json();
+        
+        const statusElement = document.getElementById('chat-workspace-status');
+        if (data.success && data.workspace_path) {
+            const pathParts = data.workspace_path.split('/');
+            const name = pathParts[pathParts.length - 1] || 'Root';
+            statusElement.innerHTML = `<i class="fas fa-folder text-green-500 mr-1"></i>${name}`;
+        } else {
+            statusElement.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-1"></i>No workspace selected`;
+        }
+    } catch (error) {
+        document.getElementById('chat-workspace-status').innerHTML = `<i class="fas fa-times text-red-500 mr-1"></i>Error`;
+    }
+}
+
+// Enhanced functionality for auto-context and MCP integration
+function updateContextSummary(summary) {
+    const contextSummaryElement = document.getElementById('context-summary');
+    if (summary && summary.trim()) {
+        contextSummaryElement.textContent = `Context: ${summary}`;
+        contextSummaryElement.classList.remove('hidden');
+    } else {
+        contextSummaryElement.classList.add('hidden');
+    }
+}
+
+async function loadMCPStatus() {
+    try {
+        const response = await fetch('/api/mcp/tools');
+        const data = await response.json();
+        
+        const summaryElement = document.getElementById('mcp-tools-summary');
+        if (data.success) {
+            // Group tools by category
+            const toolsByCategory = {};
+            data.tools.forEach(tool => {
+                if (!toolsByCategory[tool.category]) {
+                    toolsByCategory[tool.category] = 0;
+                }
+                toolsByCategory[tool.category]++;
+            });
+            
+            const toolCounts = Object.entries(toolsByCategory)
+                .map(([category, count]) => `${category.replace('_', ' ')}: ${count}`)
+                .join(', ');
+            
+            summaryElement.innerHTML = `
+                <div>Total: ${data.total_tools} tools</div>
+                <div class="text-xs text-gray-500 mt-1">${toolCounts}</div>
+            `;
+            
+            // Update MCP status indicator
+            const mcpStatus = document.getElementById('mcp-status');
+            mcpStatus.innerHTML = `
+                <div class="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
+                <span class="text-xs text-gray-600">${data.total_tools} MCP Tools</span>
+            `;
+        } else {
+            summaryElement.textContent = 'Error loading MCP tools';
+            
+            const mcpStatus = document.getElementById('mcp-status');
+            mcpStatus.innerHTML = `
+                <div class="w-2 h-2 bg-red-500 rounded-full mr-2"></div>
+                <span class="text-xs text-gray-600">MCP Error</span>
+            `;
+        }
+    } catch (error) {
+        console.error('Failed to load MCP status:', error);
+        document.getElementById('mcp-tools-summary').textContent = 'Failed to load MCP capabilities';
+        
+        const mcpStatus = document.getElementById('mcp-status');
+        mcpStatus.innerHTML = `
+            <div class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></div>
+            <span class="text-xs text-gray-600">MCP Unavailable</span>
+        `;
+    }
+}
+
+function refreshMCPStatus() {
+    document.getElementById('mcp-tools-summary').textContent = 'Refreshing...';
+    loadMCPStatus();
+}
+
+// Quick action helper
+function quickAction(prompt) {
+    const textarea = document.querySelector('textarea[name="question"]');
+    textarea.value = prompt;
+    textarea.focus();
+    
+    // Optionally auto-submit
+    showNotification('Quick action loaded - click Send to execute', 'info');
+}
+
+// Update context summary display
+function updateContextSummary(contextSummary) {
+    const summaryElement = document.getElementById('context-summary');
+    if (contextSummary && contextSummary.length > 0) {
+        summaryElement.textContent = `Context: ${contextSummary.join(', ')}`;
+        summaryElement.classList.remove('hidden');
+    } else {
+        summaryElement.classList.add('hidden');
+    }
+}
+
+// Toggle auto context
+function toggleAutoContext() {
+    // This could be implemented to toggle a setting
+    showNotification('Auto context setting toggled', 'info');
+}
+
+// Check workspace status on page load
+async function checkWorkspaceStatus() {
+    try {
+        const response = await fetch('/api/current_codebase');
+        const data = await response.json();
+        
+        const statusElement = document.getElementById('chat-workspace-status');
+        if (data.success && data.workspace_path) {
+            const pathParts = data.workspace_path.split('/');
+            const name = pathParts[pathParts.length - 1] || 'Root';
+            statusElement.innerHTML = `<i class="fas fa-folder text-green-500 mr-1"></i>${name}`;
+        } else {
+            statusElement.innerHTML = `<i class="fas fa-exclamation-triangle text-red-500 mr-1"></i>No workspace selected`;
+        }
+    } catch (error) {
+        document.getElementById('chat-workspace-status').innerHTML = `<i class="fas fa-times text-red-500 mr-1"></i>Error`;
+    }
 }
 </script>
 {% endblock %}

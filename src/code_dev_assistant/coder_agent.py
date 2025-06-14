@@ -203,10 +203,15 @@ Available Task Types:
 - refactoring: Improve code structure and quality
 - documentation: Generate or improve documentation
 - testing: Create or improve tests
-- analysis: Analyze code structure, dependencies, or patterns
+- analysis: Technical analysis of code structure, dependencies, patterns, metrics, or extracting code chunks
 - git_operations: Perform Git version control operations
 - project_setup: Help with project initialization or configuration
-- chat: General conversation about code or programming
+- chat: General conversation, explanations about how code works, project overviews, or high-level questions
+
+IMPORTANT GUIDELINES:
+- Use "chat" for general questions like "explain how this works", "what does this do", "how does this project work"
+- Use "analysis" only for technical deep-dive requests like "analyze code structure", "extract patterns", "code metrics"
+- If the user asks for a general explanation or overview, use "chat" not "analysis"
 
 Relevant Code Context:
 {rag_context}
@@ -252,22 +257,39 @@ Please respond with a JSON object containing:
         """Fallback request analysis using simple keyword matching."""
         request_lower = request.lower()
         
-        if any(word in request_lower for word in ["generate", "create", "write", "implement"]):
+        # Check for specific technical analysis patterns first
+        if any(pattern in request_lower for pattern in ["analyze code structure", "code metrics", "dependency analysis", "extract patterns", "code chunks"]):
+            return {"success": True, "task_type": "analysis", "parameters": {"type": "general"}}
+        
+        # Check for code generation
+        elif any(word in request_lower for word in ["generate", "create", "write", "implement"]):
             return {"success": True, "task_type": "code_generation", "parameters": {"description": request}}
+        
+        # Check for code review
         elif any(word in request_lower for word in ["review", "check", "improve", "optimize"]):
             return {"success": True, "task_type": "code_review", "parameters": {"request": request}}
+        
+        # Check for bug fixing
         elif any(word in request_lower for word in ["bug", "error", "fix", "debug", "issue"]):
             return {"success": True, "task_type": "bug_fixing", "parameters": {"description": request}}
+        
+        # Check for refactoring
         elif any(word in request_lower for word in ["refactor", "restructure", "reorganize"]):
             return {"success": True, "task_type": "refactoring", "parameters": {"goals": ["readability", "maintainability"]}}
-        elif any(word in request_lower for word in ["document", "docs", "comment", "explain"]):
+        
+        # Check for documentation (but exclude general explanation requests)
+        elif any(word in request_lower for word in ["document", "docs", "comment"]) and not any(phrase in request_lower for phrase in ["explain how", "what does", "how does", "what is"]):
             return {"success": True, "task_type": "documentation", "parameters": {"type": "explanation"}}
+        
+        # Check for testing
         elif any(word in request_lower for word in ["test", "testing", "unittest", "pytest"]):
             return {"success": True, "task_type": "testing", "parameters": {"framework": "pytest"}}
+        
+        # Check for git operations
         elif any(word in request_lower for word in ["git", "commit", "branch", "push", "pull", "merge"]):
             return {"success": True, "task_type": "git_operations", "parameters": {"operation": request}}
-        elif any(word in request_lower for word in ["analyze", "structure", "dependencies", "metrics"]):
-            return {"success": True, "task_type": "analysis", "parameters": {"type": "general"}}
+        
+        # General explanation and chat requests (including "explain how", "what does", etc.)
         else:
             return {"success": True, "task_type": "chat", "parameters": {"question": request}}
     
@@ -598,6 +620,25 @@ Please respond with a JSON object containing:
         try:
             # Get relevant context
             context = await self._get_relevant_context(request)
+            
+            # For project overview questions, try to get broader context
+            overview_keywords = ["how this works", "what does this do", "explain this code", "how does this project", "what is this"]
+            if any(keyword in request.lower() for keyword in overview_keywords):
+                # Try to get more comprehensive context for project overview questions
+                try:
+                    if self.current_project_context:
+                        # Get broader context with lower similarity threshold for overview questions
+                        rag_results = await self.rag_system.execute_rag_tool("search_code", {
+                            "query": "main function class interface API",
+                            "limit": 8,
+                            "similarity_threshold": 0.4
+                        })
+                        if rag_results:
+                            overview_context = "\n".join([result.text for result in rag_results])
+                            if len(overview_context) > len(context):
+                                context = overview_context
+                except:
+                    pass
             
             result = await self.llm_client.execute_llm_tool("chat_about_code", {
                 "question": parameters.get("question", request),

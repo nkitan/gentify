@@ -14,6 +14,10 @@ web_ui_validation_report.json
 
 # App data
 code_rag_db/
+.code_rag_db/
+databases/
 
 # Test results
 *test_results.json
+
+data/

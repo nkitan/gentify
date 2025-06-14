@@ -1,0 +1,139 @@
+2025-05-31 14:59:31 | main | INFO | logger._log_with_context:288 | Application logging initialized
+2025-05-31 14:59:34 | main | INFO | logger._log_with_context:288 | Application logging initialized
+2025-05-31 15:00:24 | main | INFO | logger._log_with_context:296 | Application logging initialized
+2025-05-31 15:51:53 | main | INFO | logger._log_with_context:238 | Application logging initialized
+2025-05-31 15:51:53 | main | INFO | logger._log_with_context:238 | Testing main logger - this should appear in the appropriate log file
+2025-05-31 15:51:53 | main | DEBUG | logger._log_with_context:238 | Debug message from main
+2025-05-31 15:51:53 | main | WARNING | logger._log_with_context:238 | Warning message from main
+2025-05-31 15:51:53 | server | INFO | logger._log_with_context:238 | Testing server logger - this should appear in the appropriate log file
+2025-05-31 15:51:53 | server | DEBUG | logger._log_with_context:238 | Debug message from server
+2025-05-31 15:51:53 | server | WARNING | logger._log_with_context:238 | Warning message from server
+2025-05-31 15:51:53 | git | WARNING | logger._log_with_context:238 | Warning message from git
+2025-05-31 15:51:53 | rag | INFO | logger._log_with_context:238 | Testing rag logger - this should appear in the appropriate log file
+2025-05-31 15:51:53 | rag | DEBUG | logger._log_with_context:238 | Debug message from rag
+2025-05-31 15:51:53 | rag | WARNING | logger._log_with_context:238 | Warning message from rag
+2025-05-31 15:51:53 | llm | INFO | logger._log_with_context:238 | Testing llm logger - this should appear in the appropriate log file
+2025-05-31 15:51:53 | llm | DEBUG | logger._log_with_context:238 | Debug message from llm
+2025-05-31 15:51:53 | llm | WARNING | logger._log_with_context:238 | Warning message from llm
+2025-05-31 15:51:53 | code_analyzer | INFO | logger._log_with_context:238 | Testing code_analyzer logger - this should appear in the appropriate log file
+2025-05-31 15:51:53 | code_analyzer | DEBUG | logger._log_with_context:238 | Debug message from code_analyzer
+2025-05-31 15:51:53 | code_analyzer | WARNING | logger._log_with_context:238 | Warning message from code_analyzer
+2025-05-31 15:51:53 | coder_agent | INFO | logger._log_with_context:238 | Testing coder_agent logger - this should appear in the appropriate log file
+2025-05-31 15:51:53 | coder_agent | DEBUG | logger._log_with_context:238 | Debug message from coder_agent
+2025-05-31 15:51:53 | coder_agent | WARNING | logger._log_with_context:238 | Warning message from coder_agent
+2025-05-31 15:51:53 | workflow | INFO | logger._log_with_context:238 | Testing workflow logger - this should appear in the appropriate log file
+2025-05-31 15:51:53 | workflow | DEBUG | logger._log_with_context:238 | Debug message from workflow
+2025-05-31 15:51:53 | workflow | WARNING | logger._log_with_context:238 | Warning message from workflow
+2025-05-31 15:51:53 | health_check | INFO | logger._log_with_context:238 | Testing health_check logger - this should appear in the appropriate log file
+2025-05-31 15:51:53 | health_check | DEBUG | logger._log_with_context:238 | Debug message from health_check
+2025-05-31 15:51:53 | health_check | WARNING | logger._log_with_context:238 | Warning message from health_check
+2025-05-31 15:51:53 | main | DEBUG | logger._log_with_context:238 | Pushed context: test_operation
+2025-05-31 15:51:53 | main | INFO | logger._log_with_context:238 | Starting operation: test_operation
+2025-05-31 15:51:53 | main | INFO | logger._log_with_context:238 | This is inside a context manager
+2025-05-31 15:51:53 | main | INFO | logger._log_with_context:238 | Operation completed: test_operation
+2025-05-31 15:51:53 | main | DEBUG | logger._log_with_context:238 | Popped context: test_operation
+2025-05-31 15:51:58 | main | INFO | logger._log_with_context:238 | Application logging initialized
+2025-05-31 15:51:58 | main | INFO | logger._log_with_context:238 | Testing main logger - this should appear in the appropriate log file
+2025-05-31 15:51:58 | main | DEBUG | logger._log_with_context:238 | Debug message from main
+2025-05-31 15:51:58 | main | WARNING | logger._log_with_context:238 | Warning message from main
+2025-05-31 15:51:58 | server | INFO | logger._log_with_context:238 | Testing server logger - this should appear in the appropriate log file
+2025-05-31 15:51:58 | server | DEBUG | logger._log_with_context:238 | Debug message from server
+2025-05-31 15:51:58 | server | WARNING | logger._log_with_context:238 | Warning message from server
+2025-05-31 15:51:58 | git | WARNING | logger._log_with_context:238 | Warning message from git
+2025-05-31 15:51:58 | rag | INFO | logger._log_with_context:238 | Testing rag logger - this should appear in the appropriate log file
+2025-05-31 15:51:58 | rag | DEBUG | logger._log_with_context:238 | Debug message from rag
+2025-05-31 15:51:58 | rag | WARNING | logger._log_with_context:238 | Warning message from rag
+2025-05-31 15:51:58 | llm | INFO | logger._log_with_context:238 | Testing llm logger - this should appear in the appropriate log file
+2025-05-31 15:51:58 | llm | DEBUG | logger._log_with_context:238 | Debug message from llm
+2025-05-31 15:51:58 | llm | WARNING | logger._log_with_context:238 | Warning message from llm
+2025-05-31 15:51:58 | code_analyzer | INFO | logger._log_with_context:238 | Testing code_analyzer logger - this should appear in the appropriate log file
+2025-05-31 15:51:58 | code_analyzer | DEBUG | logger._log_with_context:238 | Debug message from code_analyzer
+2025-05-31 15:51:58 | code_analyzer | WARNING | logger._log_with_context:238 | Warning message from code_analyzer
+2025-05-31 15:51:58 | coder_agent | INFO | logger._log_with_context:238 | Testing coder_agent logger - this should appear in the appropriate log file
+2025-05-31 15:51:58 | coder_agent | DEBUG | logger._log_with_context:238 | Debug message from coder_agent
+2025-05-31 15:51:58 | coder_agent | WARNING | logger._log_with_context:238 | Warning message from coder_agent
+2025-05-31 15:51:58 | workflow | INFO | logger._log_with_context:238 | Testing workflow logger - this should appear in the appropriate log file
+2025-05-31 15:51:58 | workflow | DEBUG | logger._log_with_context:238 | Debug message from workflow
+2025-05-31 15:51:58 | workflow | WARNING | logger._log_with_context:238 | Warning message from workflow
+2025-05-31 15:51:58 | health_check | INFO | logger._log_with_context:238 | Testing health_check logger - this should appear in the appropriate log file
+2025-05-31 15:51:58 | health_check | DEBUG | logger._log_with_context:238 | Debug message from health_check
+2025-05-31 15:51:58 | health_check | WARNING | logger._log_with_context:238 | Warning message from health_check
+2025-05-31 15:51:58 | main | DEBUG | logger._log_with_context:238 | Pushed context: test_operation
+2025-05-31 15:51:58 | main | INFO | logger._log_with_context:238 | Starting operation: test_operation
+2025-05-31 15:51:58 | main | INFO | logger._log_with_context:238 | This is inside a context manager
+2025-05-31 15:51:58 | main | INFO | logger._log_with_context:238 | Operation completed: test_operation
+2025-05-31 15:51:58 | main | DEBUG | logger._log_with_context:238 | Popped context: test_operation
+2025-05-31 15:56:05 | main | INFO | logger._log_with_context:238 | Application logging initialized
+2025-05-31 15:56:05 | main | INFO | logger._log_with_context:238 | Testing main logger - this should appear in the appropriate log file
+2025-05-31 15:56:05 | main | DEBUG | logger._log_with_context:238 | Debug message from main
+2025-05-31 15:56:05 | main | WARNING | logger._log_with_context:238 | Warning message from main
+2025-05-31 15:56:05 | server | INFO | logger._log_with_context:238 | Testing server logger - this should appear in the appropriate log file
+2025-05-31 15:56:05 | server | DEBUG | logger._log_with_context:238 | Debug message from server
+2025-05-31 15:56:05 | server | WARNING | logger._log_with_context:238 | Warning message from server
+2025-05-31 15:56:05 | git | WARNING | logger._log_with_context:238 | Warning message from git
+2025-05-31 15:56:05 | rag | INFO | logger._log_with_context:238 | Testing rag logger - this should appear in the appropriate log file
+2025-05-31 15:56:05 | rag | DEBUG | logger._log_with_context:238 | Debug message from rag
+2025-05-31 15:56:05 | rag | WARNING | logger._log_with_context:238 | Warning message from rag
+2025-05-31 15:56:05 | llm | INFO | logger._log_with_context:238 | Testing llm logger - this should appear in the appropriate log file
+2025-05-31 15:56:05 | llm | DEBUG | logger._log_with_context:238 | Debug message from llm
+2025-05-31 15:56:05 | llm | WARNING | logger._log_with_context:238 | Warning message from llm
+2025-05-31 15:56:05 | code_analyzer | INFO | logger._log_with_context:238 | Testing code_analyzer logger - this should appear in the appropriate log file
+2025-05-31 15:56:05 | code_analyzer | DEBUG | logger._log_with_context:238 | Debug message from code_analyzer
+2025-05-31 15:56:05 | code_analyzer | WARNING | logger._log_with_context:238 | Warning message from code_analyzer
+2025-05-31 15:56:05 | coder_agent | INFO | logger._log_with_context:238 | Testing coder_agent logger - this should appear in the appropriate log file
+2025-05-31 15:56:05 | coder_agent | DEBUG | logger._log_with_context:238 | Debug message from coder_agent
+2025-05-31 15:56:05 | coder_agent | WARNING | logger._log_with_context:238 | Warning message from coder_agent
+2025-05-31 15:56:05 | workflow | INFO | logger._log_with_context:238 | Testing workflow logger - this should appear in the appropriate log file
+2025-05-31 15:56:05 | workflow | DEBUG | logger._log_with_context:238 | Debug message from workflow
+2025-05-31 15:56:05 | workflow | WARNING | logger._log_with_context:238 | Warning message from workflow
+2025-05-31 15:56:05 | health_check | INFO | logger._log_with_context:238 | Testing health_check logger - this should appear in the appropriate log file
+2025-05-31 15:56:05 | health_check | DEBUG | logger._log_with_context:238 | Debug message from health_check
+2025-05-31 15:56:05 | health_check | WARNING | logger._log_with_context:238 | Warning message from health_check
+2025-05-31 15:56:05 | main | DEBUG | logger._log_with_context:238 | Pushed context: test_operation
+2025-05-31 15:56:05 | main | INFO | logger._log_with_context:238 | Starting operation: test_operation
+2025-05-31 15:56:05 | main | INFO | logger._log_with_context:238 | This is inside a context manager
+2025-05-31 15:56:05 | main | INFO | logger._log_with_context:238 | Operation completed: test_operation
+2025-05-31 15:56:05 | main | DEBUG | logger._log_with_context:238 | Popped context: test_operation
+2025-05-31 15:56:42 | main | INFO | logger._log_with_context:238 | Application logging initialized
+2025-05-31 15:56:42 | main | INFO | logger._log_with_context:238 | Testing main logger - this should appear in the appropriate log file
+2025-05-31 15:56:42 | main | DEBUG | logger._log_with_context:238 | Debug message from main
+2025-05-31 15:56:42 | main | WARNING | logger._log_with_context:238 | Warning message from main
+2025-05-31 15:56:42 | server | INFO | logger._log_with_context:238 | Testing server logger - this should appear in the appropriate log file
+2025-05-31 15:56:42 | server | DEBUG | logger._log_with_context:238 | Debug message from server
+2025-05-31 15:56:42 | server | WARNING | logger._log_with_context:238 | Warning message from server
+2025-05-31 15:56:42 | git | WARNING | logger._log_with_context:238 | Warning message from git
+2025-05-31 15:56:42 | rag | INFO | logger._log_with_context:238 | Testing rag logger - this should appear in the appropriate log file
+2025-05-31 15:56:42 | rag | DEBUG | logger._log_with_context:238 | Debug message from rag
+2025-05-31 15:56:42 | rag | WARNING | logger._log_with_context:238 | Warning message from rag
+2025-05-31 15:56:42 | llm | INFO | logger._log_with_context:238 | Testing llm logger - this should appear in the appropriate log file
+2025-05-31 15:56:42 | llm | DEBUG | logger._log_with_context:238 | Debug message from llm
+2025-05-31 15:56:42 | llm | WARNING | logger._log_with_context:238 | Warning message from llm
+2025-05-31 15:56:42 | code_analyzer | INFO | logger._log_with_context:238 | Testing code_analyzer logger - this should appear in the appropriate log file
+2025-05-31 15:56:42 | code_analyzer | DEBUG | logger._log_with_context:238 | Debug message from code_analyzer
+2025-05-31 15:56:42 | code_analyzer | WARNING | logger._log_with_context:238 | Warning message from code_analyzer
+2025-05-31 15:56:42 | coder_agent | INFO | logger._log_with_context:238 | Testing coder_agent logger - this should appear in the appropriate log file
+2025-05-31 15:56:42 | coder_agent | DEBUG | logger._log_with_context:238 | Debug message from coder_agent
+2025-05-31 15:56:42 | coder_agent | WARNING | logger._log_with_context:238 | Warning message from coder_agent
+2025-05-31 15:56:42 | workflow | INFO | logger._log_with_context:238 | Testing workflow logger - this should appear in the appropriate log file
+2025-05-31 15:56:42 | workflow | DEBUG | logger._log_with_context:238 | Debug message from workflow
+2025-05-31 15:56:42 | workflow | WARNING | logger._log_with_context:238 | Warning message from workflow
+2025-05-31 15:56:42 | health_check | INFO | logger._log_with_context:238 | Testing health_check logger - this should appear in the appropriate log file
+2025-05-31 15:56:42 | health_check | DEBUG | logger._log_with_context:238 | Debug message from health_check
+2025-05-31 15:56:42 | health_check | WARNING | logger._log_with_context:238 | Warning message from health_check
+2025-05-31 15:56:42 | main | DEBUG | logger._log_with_context:238 | Pushed context: test_operation
+2025-05-31 15:56:42 | main | INFO | logger._log_with_context:238 | Starting operation: test_operation
+2025-05-31 15:56:42 | main | INFO | logger._log_with_context:238 | This is inside a context manager
+2025-05-31 15:56:42 | main | INFO | logger._log_with_context:238 | Operation completed: test_operation
+2025-05-31 15:56:42 | main | DEBUG | logger._log_with_context:238 | Popped context: test_operation
+{"timestamp": "2025-05-31T15:59:21.327769", "level": "INFO", "logger": "main", "message": "Application logging initialized", "module": "logger", "function": "_log_with_context", "line": 238, "taskName": null, "log_level": "DEBUG", "log_directory": "/home/nkitan/gentify/logs", "structured_logging": true}
+{"timestamp": "2025-05-31T16:01:24.159810", "level": "INFO", "logger": "main", "message": "Application logging initialized", "module": "logger", "function": "_log_with_context", "line": 238, "taskName": null, "log_level": "DEBUG", "log_directory": "/home/nkitan/gentify/logs", "structured_logging": true}
+2025-05-31 16:01:42 | main | INFO | logger._log_with_context:238 | Application logging initialized
+2025-05-31 16:01:46 | main | INFO | logger._log_with_context:238 | Application logging initialized
+2025-05-31 16:02:22 | main | INFO | logger._log_with_context:238 | Application logging initialized
+2025-05-31 16:02:22 | main | INFO | logger._log_with_context:238 | Test message from main logger - should appear in application.log
+2025-05-31 16:02:22 | rag | INFO | logger._log_with_context:238 | Test message from rag logger - should appear in application.log
+2025-05-31 16:02:26 | main | INFO | logger._log_with_context:238 | Application logging initialized
+2025-05-31 16:02:26 | main | INFO | logger._log_with_context:238 | Test message from main logger - should appear in application.log
+2025-05-31 16:02:26 | rag | INFO | logger._log_with_context:238 | Test message from rag logger - should appear in application.log
+{"timestamp": "2025-05-31T16:51:57.003589", "level": "INFO", "logger": "main", "message": "Application logging initialized", "module": "logger", "function": "_log_with_context", "line": 238, "taskName": null, "log_level": "DEBUG", "log_directory": "/home/nkitan/gentify/logs", "structured_logging": true}
+{"timestamp": "2025-05-31T16:54:59.815011", "level": "INFO", "logger": "main", "message": "Application logging initialized", "module": "logger", "function": "_log_with_context", "line": 238, "taskName": null, "log_level": "DEBUG", "log_directory": "/home/nkitan/gentify/logs", "structured_logging": true}

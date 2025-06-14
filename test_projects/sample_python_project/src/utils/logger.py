@@ -93,7 +93,7 @@ def setup_application_logging(log_level: str = "INFO",
     log_dir = Path(log_directory)
     log_dir.mkdir(exist_ok=True)
     
-    # Main application logger
+    # Simplified logging - all application components use a single log file
     setup_logger(
         name="sample_app",
         level=log_level,
@@ -102,32 +102,15 @@ def setup_application_logging(log_level: str = "INFO",
         file_output=True
     )
     
-    # Calculator module logger
-    setup_logger(
-        name="calculator",
-        level=log_level,
-        log_file=log_dir / "calculator.log",
-        console_output=False,
-        file_output=True
-    )
-    
-    # Data processing logger
-    setup_logger(
-        name="data_processing",
-        level=log_level,
-        log_file=log_dir / "data_processing.log",
-        console_output=False,
-        file_output=True
-    )
-    
-    # Web scraper logger
-    setup_logger(
-        name="web_scraper",
-        level=log_level,
-        log_file=log_dir / "web_scraper.log",
-        console_output=False,
-        file_output=True
-    )
+    # All other components use the same application.log file
+    for component in ["calculator", "data_processing", "web_scraper"]:
+        setup_logger(
+            name=component,
+            level=log_level,
+            log_file=log_dir / "application.log",
+            console_output=False,
+            file_output=True
+        )
     
     # Suppress noisy third-party loggers
     logging.getLogger("requests").setLevel(logging.WARNING)

@@ -1,28 +1,77 @@
-from typing import cast
+"""
+MCP Server for Code Development Assistant with comprehensive debug logging.
+"""
 import asyncio
+import logging
 import os
 from pathlib import Path
+from typing import cast
 
 from mcp.server.models import InitializationOptions
-import mcp.types as types
 from mcp.server import NotificationOptions, Server
 from pydantic import AnyUrl
 import mcp.server.stdio
+import mcp.types as types
 
+from .config import get_config
+from .logger import get_logger, setup_application_logging, log_function_calls
 from .git_tools import GitTools
 from .code_analyzer import CodeAnalyzer
 from .rag_system import CodeRAG
 from .llm_client import CodeLLM
 from .coder_agent import CoderAgent
 
+# Initialize logging first
+config = get_config()
+loggers = setup_application_logging(
+    log_level=config.logging.level,
+    log_directory=config.logging.log_directory,
+    enable_structured_logging=config.logging.enable_structured_logging,
+    enable_performance_tracking=config.logging.enable_performance_tracking
+)
+
+# Get server logger
+logger = loggers["server"]
+
+@log_function_calls(logger)
+def initialize_components():
+    """Initialize all components with debug logging."""
+    logger.info("Starting component initialization")
+    
+    with logger.context_manager("component_init"):
+        try:
+            logger.debug("Initializing Git tools")
+            git_tools = GitTools()
+            logger.debug("Git tools initialized successfully")
+            
+            logger.debug("Initializing code analyzer")
+            code_analyzer = CodeAnalyzer()
+            logger.debug("Code analyzer initialized successfully")
+            
+            logger.debug("Initializing RAG system")
+            rag_system = CodeRAG()
+            logger.debug("RAG system initialized successfully")
+            
+            logger.debug("Initializing LLM client")
+            llm_client = CodeLLM()
+            logger.debug("LLM client initialized successfully")
+            
+            logger.debug("Initializing coder agent")
+            coder_agent = CoderAgent(llm_client, rag_system, code_analyzer, git_tools)
+            logger.debug("Coder agent initialized successfully")
+            
+            logger.info("All components initialized successfully")
+            return git_tools, code_analyzer, rag_system, llm_client, coder_agent
+            
+        except Exception as e:
+            logger.exception("Failed to initialize components")
+            raise
+
 # Initialize components
-git_tools = GitTools()
-code_analyzer = CodeAnalyzer()
-rag_system = CodeRAG()
-llm_client = CodeLLM()
-coder_agent = CoderAgent(llm_client, rag_system, code_analyzer, git_tools)
+git_tools, code_analyzer, rag_system, llm_client, coder_agent = initialize_components()
 
 server = Server("code-dev-assistant")
+logger.info("MCP Server instance created")
 
 @server.list_resources()
 async def handle_list_resources() -> list[types.Resource]:

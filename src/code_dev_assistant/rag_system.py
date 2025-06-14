@@ -76,7 +76,7 @@ class CodeDocument:
 class CodeRAG:
     """RAG system for code understanding and retrieval."""
     
-    def __init__(self, db_path: str = "./code_rag_db", model_name: str = "all-MiniLM-L6-v2"):
+    def __init__(self, db_path: str = "./databases/rag/default", model_name: str = "all-MiniLM-L6-v2"):
         """Initialize RAG system with LanceDB and sentence transformer."""
         self.db_path = db_path
         self.model_name = model_name
@@ -359,6 +359,9 @@ class CodeRAG:
                             import pyarrow as pa
                             import numpy as np
                             
+                            # Ensure embeddings are proper lists/arrays
+                            df['embedding'] = df['embedding'].apply(lambda x: np.array(x, dtype=np.float32).tolist())
+                            
                             # Create proper PyArrow schema with fixed-size list for embeddings
                             embedding_dim = len(chunk_data[0]['embedding'])
                             schema = pa.schema([
@@ -375,8 +378,13 @@ class CodeRAG:
                                 ('metadata', pa.string())
                             ])
                             
-                            # Convert to PyArrow table with explicit schema
-                            table = pa.Table.from_pandas(df, schema=schema)
+                            # Convert to PyArrow table with explicit schema, ensuring embedding column is properly formatted
+                            try:
+                                table = pa.Table.from_pandas(df, schema=schema)
+                            except Exception as schema_error:
+                                print(f"Schema conversion error: {schema_error}")
+                                # Fallback: let LanceDB infer the schema
+                                table = pa.Table.from_pandas(df)
                             
                             # Add to database
                             self.table.add(table)

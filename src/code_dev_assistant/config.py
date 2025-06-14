@@ -122,6 +122,38 @@ class AgentUIConfig:
 
 
 @dataclass
+class LoggingConfig:
+    """Configuration for application logging."""
+    level: str = "INFO"
+    log_directory: str = "logs"
+    enable_console_output: bool = True
+    enable_file_output: bool = True
+    enable_structured_logging: bool = False
+    enable_performance_tracking: bool = True
+    max_file_size_mb: int = 10
+    backup_count: int = 5
+    log_format: str = "%(asctime)s | %(name)s | %(levelname)s | %(funcName)s:%(lineno)d | %(message)s"
+    date_format: str = "%Y-%m-%d %H:%M:%S"
+    
+    # Component-specific log levels
+    component_levels: Optional[Dict[str, str]] = None
+    
+    # Third-party library log levels
+    suppress_third_party: bool = True
+    third_party_level: str = "WARNING"
+    
+    def __post_init__(self):
+        if self.component_levels is None:
+            self.component_levels = {
+                "git": "INFO",
+                "rag": "DEBUG",
+                "llm": "INFO",
+                "web_ui": "INFO",
+                "server": "DEBUG"
+            }
+
+
+@dataclass
 class AssistantConfig:
     """Main configuration for the code development assistant."""
     git: GitConfig
@@ -131,6 +163,7 @@ class AssistantConfig:
     coder_agent: CoderAgentConfig
     workflow: WorkflowConfig
     ui: AgentUIConfig
+    logging: LoggingConfig
     workspace_path: Optional[str] = None
     log_level: str = "INFO"
     
@@ -149,6 +182,7 @@ class AssistantConfig:
                 coder_agent=CoderAgentConfig(**data.get('coder_agent', {})),
                 workflow=WorkflowConfig(**data.get('workflow', {})),
                 ui=AgentUIConfig(**data.get('ui', {})),
+                logging=LoggingConfig(**data.get('logging', {})),
                 workspace_path=data.get('workspace_path'),
                 log_level=data.get('log_level', 'INFO')
             )
@@ -166,7 +200,8 @@ class AssistantConfig:
             code_analysis=CodeAnalysisConfig(),
             coder_agent=CoderAgentConfig(),
             workflow=WorkflowConfig(),
-            ui=AgentUIConfig()
+            ui=AgentUIConfig(),
+            logging=LoggingConfig()
         )
     
     def to_file(self, config_path: str):
